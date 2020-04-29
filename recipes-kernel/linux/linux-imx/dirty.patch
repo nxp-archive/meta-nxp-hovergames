@@ -1,278 +1,138 @@
-diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mm-ddr4-evk.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mm-ddr4-evk.dts
-index 618caf8baf6c..889274d0e804 100644
---- a/arch/arm64/boot/dts/freescale/fsl-imx8mm-ddr4-evk.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-imx8mm-ddr4-evk.dts
-@@ -94,13 +94,23 @@
+From c89fe02ba1d21fb0c04f09617dc04d1e9d841d4d Mon Sep 17 00:00:00 2001
+From: Jason Liu <jason.hui.liu@nxp.com>
+Date: Thu, 30 Apr 2020 19:47:35 +0800
+Subject: [PATCH 1/1] update to v5.4 based on the dirty-patch with 4.14 kernel
+
+only build pass, not test on the board
+
+Signed-off-by: Jason Liu <jason.hui.liu@nxp.com>
+---
+ .../boot/dts/freescale/imx8mm-ddr4-evk.dts    |   8 -
+ arch/arm64/boot/dts/freescale/imx8mm-evk.dts  | 313 ++----------------
+ 2 files changed, 27 insertions(+), 294 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-ddr4-evk.dts b/arch/arm64/boot/dts/freescale/imx8mm-ddr4-evk.dts
+index 60b295c970cd..00961e012acc 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mm-ddr4-evk.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-ddr4-evk.dts
+@@ -91,11 +91,3 @@
+ 		interrupt-names = "host-wake";
  	};
  };
- 
+-
 -&usdhc3 {
 -	status = "disabled";
 -};
-+/*&usdhc3 {
-+//	status = "disabled";
-+
-+        pinctrl-names = "default", "state_100mhz", "state_200mhz";
-+        pinctrl-0 = <&pinctrl_usdhc3>;
-+        pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
-+        pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
-+        bus-width = <8>;
-+        non-removable;
-+        status = "okay";
- 
+-
 -&flexspi {
-+
-+};*/
-+
-+/*&flexspi {
- 	status = "disabled";
+-	status = "disabled";
 -};
-+};*/
- 
- /*
-  * External OSC is used as PCIe REFCLK on RevC board.
-@@ -108,6 +118,6 @@
-  * PCIe REFCLK to internal PLL.
-  */
- &pcie0{
--	ext_osc = <0>;
-+	ext_osc = <0>;  // 0 - internal clock; 1 - external
- 	status = "okay";
- };
-diff --git a/arch/arm64/boot/dts/freescale/fsl-imx8mm-evk.dts b/arch/arm64/boot/dts/freescale/fsl-imx8mm-evk.dts
-index 57de82ec4e76..71a9f9b50d19 100755
---- a/arch/arm64/boot/dts/freescale/fsl-imx8mm-evk.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-imx8mm-evk.dts
-@@ -89,6 +89,7 @@
- 		};
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-evk.dts b/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
+index 1436f24428a7..0db8b3fd30cc 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-evk.dts
+@@ -86,100 +86,7 @@
+ 		gpio = <&pca6416 1 GPIO_ACTIVE_HIGH>;
  	};
  
-+/*
- 	wm8524: wm8524 {
- 		compatible = "wlf,wm8524";
- 		clocks = <&clk IMX8MM_CLK_SAI3_ROOT>;
-@@ -96,7 +97,7 @@
- 		wlf,mute-gpios = <&gpio5 21 GPIO_ACTIVE_LOW>;
- 	};
- 
--	sound-wm8524 {
-+/*	sound-wm8524 {
- 		compatible = "fsl,imx-audio-wm8524";
- 		model = "wm8524-audio";
- 		audio-cpu = <&sai3>;
-@@ -104,17 +105,17 @@
- 		audio-routing =
- 			"Line Out Jack", "LINEVOUTL",
- 			"Line Out Jack", "LINEVOUTR";
--	};
-+	};*/
- 
--	sound-ak4458 {
-+/*	sound-ak4458 {
- 		compatible = "fsl,imx-audio-ak4458";
- 		model = "ak4458-audio";
- 		audio-cpu = <&sai1>;
- 		audio-codec = <&ak4458_1>, <&ak4458_2>;
- 		ak4458,pdn-gpio = <&pca6416 4 GPIO_ACTIVE_HIGH>;
--	};
-+	};*/
- 
--	sound-ak5558 {
-+/*	sound-ak5558 {
- 		compatible = "fsl,imx-audio-ak5558";
- 		model = "ak5558-audio";
- 		audio-cpu = <&sai5>;
-@@ -136,13 +137,15 @@
- 		spdif-controller = <&spdif1>;
- 		spdif-out;
- 		spdif-in;
--	};
-+	};*/
- 
-+	
-+/*
- 	sound-micfil {
- 		compatible = "fsl,imx-audio-micfil";
- 		model = "imx-audio-micfil";
- 		cpu-dai = <&micfil>;
--	};
-+	};*/
- };
- 
- &clk {
-@@ -263,13 +266,13 @@
- 			>;
- 		};
- 
--		pinctrl_typec2: typec2grp {
-+/*		pinctrl_typec2: typec2grp {
- 			fsl,pins = <
- 				MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x159
- 			>;
--		};
-+		};*/
- 
--		pinctrl_sai1: sai1grp {
-+/*		pinctrl_sai1: sai1grp {
- 			fsl,pins = <
- 				MX8MM_IOMUXC_SAI1_MCLK_SAI1_MCLK	0xd6
- 				MX8MM_IOMUXC_SAI1_TXFS_SAI1_TX_SYNC	0xd6
-@@ -284,9 +287,9 @@
- 				MX8MM_IOMUXC_SAI1_TXD6_SAI1_TX_DATA6	0xd6
- 				MX8MM_IOMUXC_SAI1_TXD7_SAI1_TX_DATA7	0xd6
- 			>;
--		};
-+		};*/
- 
--		pinctrl_sai1_dsd: sai1grp_dsd {
-+/*		pinctrl_sai1_dsd: sai1grp_dsd {
- 			fsl,pins = <
- 				MX8MM_IOMUXC_SAI1_MCLK_SAI1_MCLK	0xd6
- 				MX8MM_IOMUXC_SAI1_TXFS_SAI1_TX_SYNC	0xd6
-@@ -301,9 +304,9 @@
- 				MX8MM_IOMUXC_SAI1_TXD6_SAI1_TX_DATA6	0xd6
- 				MX8MM_IOMUXC_SAI1_TXD7_SAI1_TX_DATA7	0xd6
- 			>;
--		};
-+		};*/
- 
--		pinctrl_sai3: sai3grp {
-+/*		pinctrl_sai3: sai3grp {
- 			fsl,pins = <
- 				MX8MM_IOMUXC_SAI3_TXFS_SAI3_TX_SYNC     0xd6
- 				MX8MM_IOMUXC_SAI3_TXC_SAI3_TX_BCLK      0xd6
-@@ -311,9 +314,9 @@
- 				MX8MM_IOMUXC_SAI3_TXD_SAI3_TX_DATA0     0xd6
- 				MX8MM_IOMUXC_I2C4_SDA_GPIO5_IO21        0xd6
- 			>;
--		};
-+		};*/
- 
--		pinctrl_sai5: sai5grp {
-+/*		pinctrl_sai5: sai5grp {
- 			fsl,pins = <
- 				MX8MM_IOMUXC_SAI5_MCLK_SAI5_MCLK	0xd6
- 				MX8MM_IOMUXC_SAI5_RXC_SAI5_RX_BCLK	0xd6
-@@ -323,7 +326,7 @@
- 				MX8MM_IOMUXC_SAI5_RXD2_SAI5_RX_DATA2    0xd6
- 				MX8MM_IOMUXC_SAI5_RXD3_SAI5_RX_DATA3    0xd6
- 			>;
--		};
-+		};*/
- 
- 		pinctrl_pdm: pdmgrp {
- 			fsl,pins = <
-@@ -695,25 +698,8 @@
- 		};
- 	};
- 
--	typec1_ptn5110: tcpci@50 {
--		compatible = "usb,tcpci";
+-	wm8524: audio-codec {
+-		#sound-dai-cells = <0>;
+-		compatible = "wlf,wm8524";
 -		pinctrl-names = "default";
--		pinctrl-0 = <&pinctrl_typec1>;
--		reg = <0x50>;
--		interrupt-parent = <&gpio2>;
--		interrupts = <11 8>;
--		src-pdos = <0x380190c8>;
--		snk-pdos = <0x380190c8>;
--		/* Only can sink 5V for safe */
--		max-snk-mv = <5000>;
--		max-snk-ma = <3000>;
--		op-snk-mw = <10000>;
--		max-snk-mw = <15000>;
--		port-type = "drp";
--		default-role = "sink";
--		status = "okay";
+-		pinctrl-0 = <&pinctrl_gpio_wlf>;
+-		wlf,mute-gpios = <&gpio5 21 GPIO_ACTIVE_LOW>;
 -	};
 -
-+/*
-+	// does not exist in this HW
- 	typec2_ptn5110: tcpci@52 {
- 		compatible = "usb,tcpci";
- 		pinctrl-names = "default";
-@@ -723,7 +709,7 @@
- 		interrupts = <12 8>;
- 		src-pdos = <0x380190c8>;
- 		snk-pdos = <0x380190c8>;
--		/* Only can sink 5V for safe */
-+		// Only can sink 5V for safe 
- 		max-snk-mv = <5000>;
- 		max-snk-ma = <3000>;
- 		op-snk-mw = <10000>;
-@@ -731,7 +717,7 @@
- 		port-type = "drp";
- 		default-role = "sink";
- 		status = "okay";
+-	bt_sco_codec: bt_sco_codec {
+-		#sound-dai-cells = <0>;
+-		compatible = "linux,bt-sco";
 -	};
-+	};*/
+-
+-	sound-bt-sco {
+-		compatible = "simple-audio-card";
+-		simple-audio-card,name = "bt-sco-audio";
+-		simple-audio-card,format = "i2s";
+-		simple-audio-card,bitclock-inversion;
+-		simple-audio-card,frame-master = <&btcpu>;
+-		simple-audio-card,bitclock-master = <&btcpu>;
+-
+-		btcpu: simple-audio-card,cpu {
+-			sound-dai = <&sai2>;
+-			dai-tdm-slot-num = <2>;
+-			dai-tdm-slot-width = <16>;
+-		};
+-
+-		simple-audio-card,codec {
+-			sound-dai = <&bt_sco_codec>;
+-		};
+-	};
+-
+-	sound-wm8524 {
+-		compatible = "simple-audio-card";
+-		simple-audio-card,name = "wm8524-audio";
+-		simple-audio-card,format = "i2s";
+-		simple-audio-card,frame-master = <&cpudai>;
+-		simple-audio-card,bitclock-master = <&cpudai>;
+-		simple-audio-card,widgets =
+-			"Line", "Left Line Out Jack",
+-			"Line", "Right Line Out Jack";
+-		simple-audio-card,routing =
+-			"Left Line Out Jack", "LINEVOUTL",
+-			"Right Line Out Jack", "LINEVOUTR";
+-
+-		cpudai: simple-audio-card,cpu {
+-			sound-dai = <&sai3>;
+-			dai-tdm-slot-num = <2>;
+-			dai-tdm-slot-width = <32>;
+-		};
+-
+-		simple-audio-card,codec {
+-			sound-dai = <&wm8524>;
+-			clocks = <&clk IMX8MM_CLK_SAI3_ROOT>;
+-		};
+-	};
+ 
+-	sound-ak4458 {
+-		compatible = "fsl,imx-audio-ak4458";
+-		model = "ak4458-audio";
+-		audio-cpu = <&sai1>;
+-		audio-codec = <&ak4458_1>, <&ak4458_2>;
+-		ak4458,pdn-gpio = <&pca6416 4 GPIO_ACTIVE_HIGH>;
+-	};
+-
+-	sound-ak5558 {
+-		compatible = "fsl,imx-audio-ak5558";
+-		model = "ak5558-audio";
+-		audio-cpu = <&sai5>;
+-		audio-codec = <&ak5558>;
+-		status = "disabled";
+-	};
+-
+-	sound-ak4497 {
+-		compatible = "fsl,imx-audio-ak4497";
+-		model = "ak4497-audio";
+-		audio-cpu = <&sai1>;
+-		audio-codec = <&ak4497>;
+-		status = "disabled";
+-	};
+-
+-	sound-spdif {
+-		compatible = "fsl,imx-audio-spdif";
+-		model = "imx-spdif";
+-		spdif-controller = <&spdif1>;
+-		spdif-out;
+-		spdif-in;
+-	};
+-
+-	sound-micfil {
+-		compatible = "fsl,imx-audio-micfil";
+-		model = "imx-audio-micfil";
+-		cpu-dai = <&micfil>;
+-	};
  };
  
- 
-@@ -767,6 +753,29 @@
- 		#gpio-cells = <2>;
- 	};
- 
-+	// TCPC moved to I2C3 
-+        typec1_ptn5110: tcpci@50 {
-+                compatible = "usb,tcpci";
-+                pinctrl-names = "default";
-+                pinctrl-0 = <&pinctrl_typec1>;
-+                reg = <0x50>;
-+                interrupt-parent = <&gpio2>;
-+                interrupts = <11 8>;
-+                src-pdos = <0x380190c8>;
-+                snk-pdos = <0x380190c8>;
-+                /* Only can sink 5V for safe - fck it, sink up to 20V */
-+                max-snk-mv = <20000>;
-+                max-snk-ma = <3000>;
-+                op-snk-mw = <10000>;
-+                max-snk-mw = <15000>;
-+                port-type = "drp";
-+                default-role = "sink";
-+                status = "okay";
-+        };
-+
-+
-+
-+/*
- 	ak4458_1: ak4458@10 {
- 		compatible = "asahi-kasei,ak4458";
- 		reg = <0x10>;
-@@ -796,6 +805,7 @@
- 		AVDD-supply = <&reg_audio_board>;
- 		DVDD-supply = <&reg_audio_board>;
- 	};
-+*/
- 
- 	ov5640_mipi: ov5640_mipi@3c {
- 		compatible = "ovti,ov5640_mipi";
-@@ -839,6 +849,7 @@
- 	status = "okay";
- };
- 
-+/*
- &sai1 {
- 	pinctrl-names = "default", "dsd";
- 	pinctrl-0 = <&pinctrl_sai1>;
-@@ -884,6 +895,9 @@
- 	status = "disabled";
- };
- 
-+*/
-+
-+/*
- &spdif1 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_spdif1>;
-@@ -901,6 +915,7 @@
- 		"rxtx4", "rxtx5", "rxtx6", "rxtx7", "spba", "pll8k", "pll11k";
- 	status = "okay";
- };
-+*/
- 
- &fec1 {
- 	pinctrl-names = "default";
-@@ -914,9 +929,9 @@
+ &A53_0 {
+@@ -208,9 +115,9 @@
  		#address-cells = <1>;
  		#size-cells = <0>;
  
@@ -281,58 +141,272 @@ index 57de82ec4e76..71a9f9b50d19 100755
  			compatible = "ethernet-phy-ieee802.3-c22";
 -			reg = <0>;
 +			reg = <4>;
- 			at803x,led-act-blind-workaround;
- 			at803x,eee-okay;
+ 			at803x,eee-disabled;
  			at803x,vddio-1p8v;
-@@ -929,7 +944,9 @@
- 	pinctrl-0 = <&pinctrl_pcie0>;
- 	disable-gpio = <&gpio1 5 GPIO_ACTIVE_LOW>;
- 	reset-gpio = <&gpio4 21 GPIO_ACTIVE_LOW>;
+ 		};
+@@ -227,94 +134,12 @@
+ 		 <&clk IMX8MM_CLK_PCIE1_PHY>,
+ 		 <&pcie0_refclk>;
+ 	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
 -	ext_osc = <1>;
-+	//ext_osc = <1>;
-+        ext_osc = <0>; // it seems we can use internal clock
-+
++	ext_osc = <0>; // 0 - internal clock; 1 - external
+ 	reserved-region = <&rpmsg_reserved>;
  	status = "okay";
  };
  
-@@ -967,11 +984,11 @@
- };
- 
- &usbotg2 {
--	dr_mode = "otg";
--	extcon = <0>, <&typec2_ptn5110>;
--	picophy,pre-emp-curr-control = <3>;
--	picophy,dc-vol-level-adjust = <7>;
+-&sai3 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_sai3>;
+-	assigned-clocks = <&clk IMX8MM_CLK_SAI3>;
+-	assigned-clock-parents = <&clk IMX8MM_AUDIO_PLL1_OUT>;
+-	assigned-clock-rates = <24576000>;
+-	status = "okay";
+-};
+-
+-&sai2 {
+-	#sound-dai-cells = <0>;
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_sai2>;
+-	assigned-clocks = <&clk IMX8MM_CLK_SAI2>;
+-	assigned-clock-parents = <&clk IMX8MM_AUDIO_PLL1_OUT>;
+-	assigned-clock-rates = <24576000>;
+-	status = "okay";
+-};
+-
+-&sai1 {
+-	pinctrl-names = "default", "dsd";
+-	pinctrl-0 = <&pinctrl_sai1>;
+-	pinctrl-1 = <&pinctrl_sai1_dsd>;
+-	assigned-clocks = <&clk IMX8MM_CLK_SAI1>;
+-	assigned-clock-parents = <&clk IMX8MM_AUDIO_PLL1_OUT>;
+-	assigned-clock-rates = <49152000>;
+-	clocks = <&clk IMX8MM_CLK_SAI1_IPG>, <&clk IMX8MM_CLK_DUMMY>,
+-		<&clk IMX8MM_CLK_SAI1_ROOT>, <&clk IMX8MM_CLK_DUMMY>,
+-		<&clk IMX8MM_CLK_DUMMY>, <&clk IMX8MM_AUDIO_PLL1_OUT>,
+-		<&clk IMX8MM_AUDIO_PLL2_OUT>;
+-	clock-names = "bus", "mclk0", "mclk1", "mclk2", "mclk3", "pll8k", "pll11k";
+-	fsl,sai-multi-lane;
+-	fsl,dataline,dsd = <0 0xff 0xff 2 0xff 0x11>;
+-	dmas = <&sdma2 0 25 0>, <&sdma2 1 25 0>;
+-	status = "okay";
+-};
+-
+-&sai5 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_sai5>;
+-	assigned-clocks = <&clk IMX8MM_CLK_SAI5>;
+-	assigned-clock-parents = <&clk IMX8MM_AUDIO_PLL1_OUT>;
+-	assigned-clock-rates = <49152000>;
+-	clocks = <&clk IMX8MM_CLK_SAI5_IPG>, <&clk IMX8MM_CLK_DUMMY>,
+-		<&clk IMX8MM_CLK_SAI5_ROOT>, <&clk IMX8MM_CLK_DUMMY>,
+-		<&clk IMX8MM_CLK_DUMMY>, <&clk IMX8MM_AUDIO_PLL1_OUT>,
+-		<&clk IMX8MM_AUDIO_PLL2_OUT>;
+-	clock-names = "bus", "mclk0", "mclk1", "mclk2", "mclk3", "pll8k", "pll11k";
+-	fsl,sai-asynchronous;
 -	status = "disabled";
-+	dr_mode = "host";
-+	//extcon = <0>, <&typec2_ptn5110>;
-+	//picophy,pre-emp-curr-control = <3>;
-+	//picophy,dc-vol-level-adjust = <7>;
-+	status = "okay";
+-};
+ 
+-&sai6 {
+-	fsl,sai-monitor-spdif;
+-	fsl,sai-asynchronous;
+-	status = "okay";
+-};
+-
+-&spdif1 {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_spdif1>;
+-	assigned-clocks = <&clk IMX8MM_CLK_SPDIF1>;
+-	assigned-clock-parents = <&clk IMX8MM_AUDIO_PLL1_OUT>;
+-	assigned-clock-rates = <24576000>;
+-	clocks = <&clk IMX8MM_CLK_AUDIO_AHB>, <&clk IMX8MM_CLK_24M>,
+-		<&clk IMX8MM_CLK_SPDIF1>, <&clk IMX8MM_CLK_DUMMY>,
+-		<&clk IMX8MM_CLK_DUMMY>, <&clk IMX8MM_CLK_DUMMY>,
+-		<&clk IMX8MM_CLK_AUDIO_AHB>, <&clk IMX8MM_CLK_DUMMY>,
+-		<&clk IMX8MM_CLK_DUMMY>, <&clk IMX8MM_CLK_DUMMY>,
+-		<&clk IMX8MM_AUDIO_PLL1_OUT>, <&clk IMX8MM_AUDIO_PLL2_OUT>;
+-	clock-names = "core", "rxtx0", "rxtx1", "rxtx2", "rxtx3",
+-		"rxtx4", "rxtx5", "rxtx6", "rxtx7", "spba", "pll8k", "pll11k";
+-	status = "okay";
+-};
+-
+-&micfil {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_pdm>;
+-	assigned-clocks = <&clk IMX8MM_CLK_PDM>;
+-	assigned-clock-parents = <&clk IMX8MM_AUDIO_PLL1_OUT>;
+-	assigned-clock-rates = <196608000>;
+-	status = "okay";
+-};
+ 
+ &snvs_pwrkey {
+ 	status = "okay";
+@@ -362,6 +187,11 @@
+ 	};
  };
  
++&usbotg2 {
++	dr_mode = "host";
++	status = "okay";
++};
++
  &usdhc1 {
-@@ -996,6 +1013,9 @@
+ 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+ 	pinctrl-0 = <&pinctrl_usdhc1>, <&pinctrl_usdhc1_gpio>;
+@@ -384,6 +214,8 @@
  	bus-width = <4>;
  	vmmc-supply = <&reg_usdhc2_vmmc>;
  	status = "okay";
-+        /delete-property/ mmc-pwrseq;
++	/delete-property/ mmc-pwrseq;
 +        /delete-property/ cap-power-off-card;
-+
  };
  
  &usdhc3 {
-@@ -1035,6 +1055,8 @@
- 	status = "okay";
- };
+@@ -557,6 +389,21 @@
+ 		};
+ 	};
  
++};
 +
-+/*
- &micfil {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_pdm>;
-@@ -1043,3 +1065,4 @@
- 	assigned-clock-rates = <0>, <196608000>;
- 	status = "okay";
- };
-+*/
++&i2c3 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c3>;
++	status = "okay";
++
++	pca6416: gpio@20 {
++		compatible = "ti,tca6416";
++		reg = <0x20>;
++		gpio-controller;
++		#gpio-cells = <2>;
++	};
++
+ 	ptn5110: tcpc@50 {
+ 		compatible = "nxp,ptn5110";
+ 		pinctrl-names = "default";
+@@ -585,51 +432,7 @@
+ 			self-powered;
+ 		};
+ 	};
+-};
+-
+-&i2c3 {
+-	clock-frequency = <100000>;
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_i2c3>;
+-	status = "okay";
+-
+-	pca6416: gpio@20 {
+-		compatible = "ti,tca6416";
+-		reg = <0x20>;
+-		gpio-controller;
+-		#gpio-cells = <2>;
+-	};
+-
+-	ak4458_1: ak4458@10 {
+-		compatible = "asahi-kasei,ak4458";
+-		reg = <0x10>;
+-		AVDD-supply = <&reg_audio_board>;
+-		DVDD-supply = <&reg_audio_board>;
+-	};
+-
+-	ak4458_2: ak4458@12 {
+-		compatible = "asahi-kasei,ak4458";
+-		reg = <0x12>;
+-		AVDD-supply = <&reg_audio_board>;
+-		DVDD-supply = <&reg_audio_board>;
+-	};
+-
+-	ak5558: ak5558@13 {
+-		compatible = "asahi-kasei,ak5558";
+-		reg = <0x13>;
+-		ak5558,pdn-gpio = <&pca6416 3 GPIO_ACTIVE_HIGH>;
+-		AVDD-supply = <&reg_audio_board>;
+-		DVDD-supply = <&reg_audio_board>;
+-	};
+-
+-	ak4497: ak4497@11 {
+-		compatible = "asahi-kasei,ak4497";
+-		reg = <0x11>;
+-		ak4497,pdn-gpio = <&pca6416 5 GPIO_ACTIVE_HIGH>;
+-		AVDD-supply = <&reg_audio_board>;
+-		DVDD-supply = <&reg_audio_board>;
+-	};
+-
++	
+ 	ov5640_mipi: ov5640_mipi@3c {
+ 		compatible = "ovti,ov5640_mipi";
+ 		reg = <0x3c>;
+@@ -765,69 +568,7 @@
+ 		>;
+ 	};
+ 
+-	pinctrl_sai2: sai2grp {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_SAI2_TXC_SAI2_TX_BCLK      0xd6
+-			MX8MM_IOMUXC_SAI2_TXFS_SAI2_TX_SYNC     0xd6
+-			MX8MM_IOMUXC_SAI2_TXD0_SAI2_TX_DATA0    0xd6
+-			MX8MM_IOMUXC_SAI2_RXD0_SAI2_RX_DATA0    0xd6
+-		>;
+-	};
+-
+-	pinctrl_sai3: sai3grp {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_SAI3_TXFS_SAI3_TX_SYNC     0xd6
+-			MX8MM_IOMUXC_SAI3_TXC_SAI3_TX_BCLK      0xd6
+-			MX8MM_IOMUXC_SAI3_MCLK_SAI3_MCLK        0xd6
+-			MX8MM_IOMUXC_SAI3_TXD_SAI3_TX_DATA0     0xd6
+-		>;
+-	};
+-
+-	pinctrl_sai1: sai1grp {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_SAI1_MCLK_SAI1_MCLK	0xd6
+-			MX8MM_IOMUXC_SAI1_TXFS_SAI1_TX_SYNC	0xd6
+-			MX8MM_IOMUXC_SAI1_RXD7_SAI1_TX_SYNC	0xd6
+-			MX8MM_IOMUXC_SAI1_TXC_SAI1_TX_BCLK	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD0_SAI1_TX_DATA0	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD1_SAI1_TX_DATA1	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD2_SAI1_TX_DATA2	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD3_SAI1_TX_DATA3	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD4_SAI1_TX_DATA4	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD5_SAI1_TX_DATA5	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD6_SAI1_TX_DATA6	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD7_SAI1_TX_DATA7	0xd6
+-		>;
+-	};
+-
+-	pinctrl_sai1_dsd: sai1grp_dsd {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_SAI1_MCLK_SAI1_MCLK	0xd6
+-			MX8MM_IOMUXC_SAI1_TXFS_SAI1_TX_SYNC	0xd6
+-			MX8MM_IOMUXC_SAI1_RXD7_SAI1_TX_DATA4	0xd6
+-			MX8MM_IOMUXC_SAI1_TXC_SAI1_TX_BCLK	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD0_SAI1_TX_DATA0	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD1_SAI1_TX_DATA1	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD2_SAI1_TX_DATA2	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD3_SAI1_TX_DATA3	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD4_SAI1_TX_DATA4	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD5_SAI1_TX_DATA5	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD6_SAI1_TX_DATA6	0xd6
+-			MX8MM_IOMUXC_SAI1_TXD7_SAI1_TX_DATA7	0xd6
+-		>;
+-	};
+-
+-	pinctrl_sai5: sai5grp {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_SAI5_MCLK_SAI5_MCLK	0xd6
+-			MX8MM_IOMUXC_SAI5_RXC_SAI5_RX_BCLK	0xd6
+-			MX8MM_IOMUXC_SAI5_RXFS_SAI5_RX_SYNC	0xd6
+-			MX8MM_IOMUXC_SAI5_RXD0_SAI5_RX_DATA0	0xd6
+-			MX8MM_IOMUXC_SAI5_RXD1_SAI5_RX_DATA1    0xd6
+-			MX8MM_IOMUXC_SAI5_RXD2_SAI5_RX_DATA2    0xd6
+-			MX8MM_IOMUXC_SAI5_RXD3_SAI5_RX_DATA3    0xd6
+-		>;
+-	};
++	
+ 
+ 	pinctrl_pdm: pdmgrp {
+ 		fsl,pins = <
+-- 
+2.17.1
+
