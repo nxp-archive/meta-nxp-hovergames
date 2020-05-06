@@ -48,14 +48,9 @@ Add hovergames layer to build configuration
 $ echo "BBLAYERS += \"\${BSPDIR}/sources/meta-nxp-hovergames\"" >> conf/bblayers.conf 
 ```
 
-Build an image
---------------
+Build the image
+---------------
 
 ```
-$ bitbake IMAGE-RECIPE
+$ bitbake imx-image-hovergames
 ```
-
-| IMAGE-RECIPE  | Description |
-| ------------- | ----------- |
-| fsl-image-gui | full image with demos and tests used for testing with graphics, no Qt |
-| fsl-image-qt5 | fsl-image-gui plus Qt 5.x |
