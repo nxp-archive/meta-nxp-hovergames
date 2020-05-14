@@ -1,0 +1,55 @@
+From 799f83d46e4a170b76a24f850f262607a70f0f3a Mon Sep 17 00:00:00 2001
+From: Tom Hochstein <tom.hochstein@nxp.com>
+Date: Thu, 14 May 2020 19:20:05 -0500
+Subject: [PATCH] Add i.MX 8M Mini NavQ support
+
+Signed-off-by: Tom Hochstein <tom.hochstein@nxp.com>
+---
+ iMX8M/soc.mak | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/iMX8M/soc.mak b/iMX8M/soc.mak
+index b7b3986..68dafc3 100644
+--- a/iMX8M/soc.mak
++++ b/iMX8M/soc.mak
+@@ -131,7 +131,7 @@ u-boot-atf-tee.bin: u-boot.bin bl31.bin tee.bin
+ 
+ .PHONY: clean
+ clean:
+-	@rm -f $(MKIMG) u-boot-atf.bin u-boot-atf-tee.bin u-boot-spl-ddr.bin u-boot.itb u-boot.its u-boot-ddr3l.itb u-boot-ddr3l.its u-boot-spl-ddr3l.bin u-boot-ddr4.itb u-boot-ddr4.its u-boot-spl-ddr4.bin u-boot-ddr4-evk.itb u-boot-ivt.itb u-boot-ddr4-evk.its $(OUTIMG)
++	@rm -f $(MKIMG) u-boot-atf.bin u-boot-atf-tee.bin u-boot-spl-ddr.bin u-boot.itb u-boot.its u-boot-navq.itb u-boot-navq.its u-boot-ddr3l.itb u-boot-ddr3l.its u-boot-spl-ddr3l.bin u-boot-ddr4.itb u-boot-ddr4.its u-boot-spl-ddr4.bin u-boot-ddr4-evk.itb u-boot-ivt.itb u-boot-ddr4-evk.its $(OUTIMG)
+ 
+ dtbs = evk.dtb
+ $(dtbs):
+@@ -145,6 +145,18 @@ u-boot.itb: $(dtbs)
+ 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot.itb
+ 	@rm -f u-boot.its $(dtbs)
+ 
++dtbs_navq = navq.dtb
++$(dtbs_navq):
++	./$(DTB_PREPROC) $(PLAT)-navq.dtb $(dtbs_navq)
++
++u-boot-navq.itb: $(dtbs_navq)
++	./$(PAD_IMAGE) tee.bin
++	./$(PAD_IMAGE) bl31.bin
++	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtbs_navq)
++	DEK_BLOB_LOAD_ADDR=$(DEK_BLOB_LOAD_ADDR) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_navq) > u-boot-navq.its
++	./mkimage_uboot -E -p 0x3000 -f u-boot-navq.its u-boot-navq.itb
++	@rm -f u-boot-navq.its $(dtbs_navq)
++
+ dtbs_ddr3l = valddr3l.dtb
+ $(dtbs_ddr3l):
+ 	./$(DTB_PREPROC) $(PLAT)-ddr3l-$(VAL_BOARD).dtb $(dtbs_ddr3l)
+@@ -204,6 +216,9 @@ flash_ddr4_val: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr4.bin u-boot-ddr4.i
+ else
+ flash_evk: flash_evk_no_hdmi
+ 
++flash_navq: $(MKIMG) u-boot-spl-ddr.bin u-boot-navq.itb
++	./mkimage_imx8 -version $(VERSION) -fit -loader u-boot-spl-ddr.bin $(SPL_LOAD_ADDR) -second_loader u-boot-navq.itb 0x40200000 0x60000 -out $(OUTIMG)
++
+ flash_evk_emmc_fastboot: flash_evk_no_hdmi_emmc_fastboot
+ 
+ flash_ddr4_evk: flash_ddr4_evk_no_hdmi
+-- 
+2.17.1
+

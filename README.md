@@ -28,7 +28,7 @@ Create a new build folder
 
 If you want to create a new build folder that includes the internal layer meta-fsl-mpu-internal:
 ```
-$ MACHINE=imx8mmlpddr4evk DISTRO=fsl-imx-internal-xwayland source fsl-setup-internal-build.sh -b build
+$ MACHINE=imx8mmnavq DISTRO=fsl-imx-internal-xwayland source fsl-setup-internal-build.sh -b build
 ```
 
 Use an existing build folder
