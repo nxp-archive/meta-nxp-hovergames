@@ -1,12 +1,12 @@
-From 1ffa68a3dca70665d07bc304906bef3628035fae Mon Sep 17 00:00:00 2001
+From d31dce44f2a97e21f2d45d74dc361ab61a8833a4 Mon Sep 17 00:00:00 2001
 From: Tom Hochstein <tom.hochstein@nxp.com>
-Date: Thu, 21 May 2020 14:15:16 -0500
+Date: Thu, 28 May 2020 09:35:34 -0500
 Subject: [PATCH] Add i.MX 8M Mini NavQ board
 
 Signed-off-by: Tom Hochstein <tom.hochstein@nxp.com>
 ---
  arch/arm/dts/Makefile                       |    1 +
- arch/arm/dts/imx8mm-navq-u-boot.dtsi        |  184 ++
+ arch/arm/dts/imx8mm-navq-u-boot.dtsi        |  186 ++
  arch/arm/dts/imx8mm-navq.dts                |  653 +++++++
  arch/arm/mach-imx/imx8m/Kconfig             |    7 +
  board/freescale/imx8mm_navq/Kconfig         |   14 +
@@ -19,7 +19,7 @@ Signed-off-by: Tom Hochstein <tom.hochstein@nxp.com>
  board/freescale/imx8mm_navq/spl.c           |  284 +++
  configs/imx8mm_navq_defconfig               |  140 ++
  include/configs/imx8mm_navq.h               |  291 +++
- 14 files changed, 5065 insertions(+)
+ 14 files changed, 5067 insertions(+)
  create mode 100644 arch/arm/dts/imx8mm-navq-u-boot.dtsi
  create mode 100644 arch/arm/dts/imx8mm-navq.dts
  create mode 100644 board/freescale/imx8mm_navq/Kconfig
@@ -34,10 +34,10 @@ Signed-off-by: Tom Hochstein <tom.hochstein@nxp.com>
  create mode 100644 include/configs/imx8mm_navq.h
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 87332b62ea..cc750153d5 100644
+index cd506c2e7a..7d0a2a1c59 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -786,6 +786,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
+@@ -787,6 +787,7 @@ dtb-$(CONFIG_ARCH_IMX8M) += \
  	imx8mm-ddr3l-val.dtb \
  	imx8mm-ddr4-val.dtb \
  	imx8mm-verdin.dtb \
@@ -47,10 +47,10 @@ index 87332b62ea..cc750153d5 100644
  	imx8mq-ddr3l-val.dtb \
 diff --git a/arch/arm/dts/imx8mm-navq-u-boot.dtsi b/arch/arm/dts/imx8mm-navq-u-boot.dtsi
 new file mode 100644
-index 0000000000..5bc030db9d
+index 0000000000..2e8e92d0af
 --- /dev/null
 +++ b/arch/arm/dts/imx8mm-navq-u-boot.dtsi
-@@ -0,0 +1,184 @@
+@@ -0,0 +1,186 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * Copyright 2019 NXP
@@ -170,6 +170,7 @@ index 0000000000..5bc030db9d
 +
 +&usdhc1 {
 +	u-boot,dm-spl;
++	non-removable;
 +	assigned-clocks = <&clk IMX8MM_CLK_USDHC1>;
 +	assigned-clock-rates = <400000000>;
 +	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_400M>;
@@ -179,6 +180,7 @@ index 0000000000..5bc030db9d
 +	u-boot,dm-spl;
 +	sd-uhs-sdr104;
 +	sd-uhs-ddr50;
++	non-removable;
 +	assigned-clocks = <&clk IMX8MM_CLK_USDHC2>;
 +	assigned-clock-rates = <400000000>;
 +	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_400M>;
@@ -235,7 +237,6 @@ index 0000000000..5bc030db9d
 +	/delete-property/ assigned-clock-parents;
 +	/delete-property/ assigned-clock-rates;
 +};
-\ No newline at end of file
 diff --git a/arch/arm/dts/imx8mm-navq.dts b/arch/arm/dts/imx8mm-navq.dts
 new file mode 100644
 index 0000000000..ad417e5635
