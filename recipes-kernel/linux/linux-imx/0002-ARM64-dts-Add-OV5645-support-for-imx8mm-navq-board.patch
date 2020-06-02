@@ -1,0 +1,145 @@
+From 40d555f177fbbc03d22bbf570b902746922d8204 Mon Sep 17 00:00:00 2001
+From: Rogerio Silva <rogerio.silva@nxp.com>
+Date: Tue, 2 Jun 2020 15:44:50 -0300
+Subject: [PATCH 2/2] ARM64: dts: Add OV5645 support for imx8mm-navq board
+
+This patch adds support for OV5645 camera for imx8mm-navq board.
+The pin MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19 had to be
+reconfigured from SDHC2 to Camera reset.
+
+Signed-off-by: Rogerio Silva <rogerio.silva@nxp.com>
+---
+ arch/arm64/boot/dts/freescale/imx8mm-navq.dts | 77 +++++++++++--------
+ 1 file changed, 46 insertions(+), 31 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+index 4024fdf56c46..fd99fdfcbb8a 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+@@ -67,11 +67,9 @@
+ 	reg_usdhc2_vmmc: regulator-usdhc2 {
+ 		compatible = "regulator-fixed";
+ 		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_reg_usdhc2_vmmc>;
+ 		regulator-name = "VSD_3V3";
+ 		regulator-min-microvolt = <3300000>;
+ 		regulator-max-microvolt = <3300000>;
+-		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
+ 		off-on-delay-us = <20000>;
+ 		enable-active-high;
+ 	};
+@@ -432,28 +430,39 @@
+ 			self-powered;
+ 		};
+ 	};
+-	
+-	ov5640_mipi: ov5640_mipi@3c {
+-		compatible = "ovti,ov5640_mipi";
+-		reg = <0x3c>;
+-		status = "okay";
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_csi_pwn>, <&pinctrl_csi_rst>;
+-		clocks = <&clk IMX8MM_CLK_CLKO1>;
+-		clock-names = "csi_mclk";
+-		assigned-clocks = <&clk IMX8MM_CLK_CLKO1>;
+-		assigned-clock-parents = <&clk IMX8MM_CLK_24M>;
+-		assigned-clock-rates = <24000000>;
+-		csi_id = <0>;
+-		pwn-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
+-		mclk = <24000000>;
+-		mclk_source = <0>;
+-		port {
+-			ov5640_mipi1_ep: endpoint {
+-				remote-endpoint = <&mipi1_sensor_ep>;
++
++};
++
++&i2c4 {
++	clock-frequency = <100000>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_i2c4>;
++	status = "okay";
++
++	ov5645_mipi: ov5645_mipi@3c {
++			compatible = "ovti,ov5645_mipi";
++			reg = <0x3c>;
++			status = "okay";
++			pinctrl-names = "default";
++			pinctrl-0 = <&pinctrl_csi1>;
++			clocks = <&clk IMX8MM_CLK_CLKO1>;
++			clock-names = "csi_mclk";
++			assigned-clocks = <&clk IMX8MM_CLK_CLKO1>;
++			assigned-clock-parents = <&clk IMX8MM_CLK_24M>;
++			assigned-clock-rates = <24000000>;
++			csi_id = <0>;
++			pwn-gpios = <&gpio2 11 1>;
++			rst-gpios = <&gpio2 19 0>;
++			mclk = <24000000>;
++			mclk_source = <0>;
++			ae_target = <52>;
++
++			port {
++				ov5645_mipi1_ep: endpoint {
++					remote-endpoint = <&mipi1_sensor_ep>;
++				};
+ 			};
+ 		};
+-	};
+ };
+ 
+ &iomuxc {
+@@ -472,6 +481,13 @@
+ 		>;
+ 	};
+ 
++	pinctrl_csi1: csi1grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_SD1_STROBE_GPIO2_IO11		0x19 /* PWDN */
++			MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19		0x19 /* RESETB */
++		>;
++	};
++
+ 	pinctrl_fec1: fec1grp {
+ 		fsl,pins = <
+ 			MX8MM_IOMUXC_ENET_MDC_ENET1_MDC			0x3
+@@ -536,6 +552,13 @@
+ 		>;
+ 	};
+ 
++	pinctrl_i2c4: i2c4grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_I2C4_SCL_I2C4_SCL			0x400001c3
++			MX8MM_IOMUXC_I2C4_SDA_I2C4_SDA			0x400001c3
++		>;
++	};
++
+ 	pinctrl_mipi_dsi_en: mipi_dsi_en {
+ 		fsl,pins = <
+ 			MX8MM_IOMUXC_GPIO1_IO08_GPIO1_IO8		0x16
+@@ -562,14 +585,6 @@
+ 		>;
+ 	};
+ 
+-	pinctrl_reg_usdhc2_vmmc: regusdhc2vmmc {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_SD2_RESET_B_GPIO2_IO19	0x41
+-		>;
+-	};
+-
+-	
+-
+ 	pinctrl_pdm: pdmgrp {
+ 		fsl,pins = <
+ 			MX8MM_IOMUXC_SAI5_MCLK_SAI5_MCLK	0xd6
+@@ -767,7 +782,7 @@
+ 	status = "okay";
+ 	port {
+ 		mipi1_sensor_ep: endpoint@1 {
+-			remote-endpoint = <&ov5640_mipi1_ep>;
++			remote-endpoint = <&ov5645_mipi1_ep>;
+ 			data-lanes = <2>;
+ 			csis-hs-settle = <13>;
+ 			csis-clk-settle = <2>;
+-- 
+2.17.1
+
