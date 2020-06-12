@@ -1,6 +1,6 @@
-From d31dce44f2a97e21f2d45d74dc361ab61a8833a4 Mon Sep 17 00:00:00 2001
+From 32c8bf5930eac4b7c5bd210d9e9d5ceb2c9bfa67 Mon Sep 17 00:00:00 2001
 From: Tom Hochstein <tom.hochstein@nxp.com>
-Date: Thu, 28 May 2020 09:35:34 -0500
+Date: Fri, 12 Jun 2020 17:28:34 -0500
 Subject: [PATCH] Add i.MX 8M Mini NavQ board
 
 Signed-off-by: Tom Hochstein <tom.hochstein@nxp.com>
@@ -15,11 +15,11 @@ Signed-off-by: Tom Hochstein <tom.hochstein@nxp.com>
  board/freescale/imx8mm_navq/README          |   37 +
  board/freescale/imx8mm_navq/ddr4_timing.c   | 1265 +++++++++++++
  board/freescale/imx8mm_navq/imx8mm_navq.c   |  321 ++++
- board/freescale/imx8mm_navq/lpddr4_timing.c | 1849 +++++++++++++++++++
+ board/freescale/imx8mm_navq/lpddr4_timing.c | 1844 +++++++++++++++++++
  board/freescale/imx8mm_navq/spl.c           |  284 +++
  configs/imx8mm_navq_defconfig               |  140 ++
  include/configs/imx8mm_navq.h               |  291 +++
- 14 files changed, 5067 insertions(+)
+ 14 files changed, 5062 insertions(+)
  create mode 100644 arch/arm/dts/imx8mm-navq-u-boot.dtsi
  create mode 100644 arch/arm/dts/imx8mm-navq.dts
  create mode 100644 board/freescale/imx8mm_navq/Kconfig
@@ -897,10 +897,10 @@ index 0000000000..ad417e5635
 +	};
 +};
 diff --git a/arch/arm/mach-imx/imx8m/Kconfig b/arch/arm/mach-imx/imx8m/Kconfig
-index 719769c3a7..64e691b496 100644
+index fb6dfe3355..1ff1b44595 100644
 --- a/arch/arm/mach-imx/imx8m/Kconfig
 +++ b/arch/arm/mach-imx/imx8m/Kconfig
-@@ -78,6 +78,12 @@ config TARGET_IMX8MM_DDR4_EVK
+@@ -87,6 +87,12 @@ config TARGET_IMX8MM_DDR4_EVK
  	select SUPPORT_SPL
  	select IMX8M_DDR4
  
@@ -913,7 +913,7 @@ index 719769c3a7..64e691b496 100644
  config TARGET_IMX8MN_EVK
  	bool "imx8mn LPDDR4 EVK board"
  	select IMX8MN
-@@ -127,6 +133,7 @@ source "board/freescale/imx8mq_val/Kconfig"
+@@ -136,6 +142,7 @@ source "board/freescale/imx8mq_val/Kconfig"
  source "board/freescale/imx8mm_ab2/Kconfig"
  source "board/freescale/imx8mm_evk/Kconfig"
  source "board/freescale/imx8mm_val/Kconfig"
@@ -2615,12 +2615,12 @@ index 0000000000..5e178a1f8f
 +}
 diff --git a/board/freescale/imx8mm_navq/lpddr4_timing.c b/board/freescale/imx8mm_navq/lpddr4_timing.c
 new file mode 100644
-index 0000000000..edeb0a7cc0
+index 0000000000..900d1e7a97
 --- /dev/null
 +++ b/board/freescale/imx8mm_navq/lpddr4_timing.c
-@@ -0,0 +1,1849 @@
+@@ -0,0 +1,1844 @@
 +/*
-+ * Copyright 2018-2019 NXP
++ * Copyright 2019 NXP
 + *
 + * SPDX-License-Identifier:	GPL-2.0+
 + *
@@ -2631,12 +2631,12 @@ index 0000000000..edeb0a7cc0
 +#include <asm/arch/ddr.h>
 +
 +struct dram_cfg_param ddr_ddrc_cfg[] = {
-+	/* Initialize DDRC registers */
++	/** Initialize DDRC registers **/
 +	{ 0x3d400304, 0x1 },
 +	{ 0x3d400030, 0x1 },
-+	{ 0x3d400000, 0xa1080020 },
++	{ 0x3d400000, 0xa3080020 },
 +	{ 0x3d400020, 0x223 },
-+	{ 0x3d400024, 0x16e3600 },
++	{ 0x3d400024, 0x3a980 },
 +	{ 0x3d400064, 0x5b00d2 },
 +	{ 0x3d4000d0, 0xc00305ba },
 +	{ 0x3d4000d4, 0x940000 },
@@ -2666,17 +2666,15 @@ index 0000000000..edeb0a7cc0
 +	{ 0x3d4001a8, 0x80000000 },
 +	{ 0x3d4001b0, 0x11 },
 +	{ 0x3d4001c0, 0x1 },
-+	{ 0x3d4001c4, 0x0 },
++	{ 0x3d4001c4, 0x1 },
 +	{ 0x3d4000f4, 0xc99 },
 +	{ 0x3d400108, 0x70e1617 },
-+	{ 0x3d400200, 0x1f },
++	{ 0x3d400200, 0x15 },
 +	{ 0x3d40020c, 0x0 },
 +	{ 0x3d400210, 0x1f1f },
 +	{ 0x3d400204, 0x80808 },
 +	{ 0x3d400214, 0x7070707 },
-+	{ 0x3d400218, 0x7070707 },
-+
-+	/* performance setting */
++	{ 0x3d400218, 0x48080707 },
 +	{ 0x3d400250, 0x29001701 },
 +	{ 0x3d400254, 0x2c },
 +	{ 0x3d40025c, 0x4000030 },
@@ -2688,10 +2686,8 @@ index 0000000000..edeb0a7cc0
 +	{ 0x3d400498, 0x620096 },
 +	{ 0x3d40049c, 0x1100e07 },
 +	{ 0x3d4004a0, 0xc8012c },
-+
-+	/* P1: 400mts */
 +	{ 0x3d402020, 0x21 },
-+	{ 0x3d402024, 0x30d400 },
++	{ 0x3d402024, 0x7d00 },
 +	{ 0x3d402050, 0x20d040 },
 +	{ 0x3d402064, 0xc001c },
 +	{ 0x3d4020dc, 0x840000 },
@@ -2714,10 +2710,9 @@ index 0000000000..edeb0a7cc0
 +	{ 0x3d402190, 0x3818200 },
 +	{ 0x3d402194, 0x80303 },
 +	{ 0x3d4021b4, 0x100 },
-+
-+	/* p2: 100mts */
++	{ 0x3d4020f4, 0xc99 },
 +	{ 0x3d403020, 0x21 },
-+	{ 0x3d403024, 0xc3500 },
++	{ 0x3d403024, 0x1f40 },
 +	{ 0x3d403050, 0x20d040 },
 +	{ 0x3d403064, 0x30007 },
 +	{ 0x3d4030dc, 0x840000 },
@@ -2740,8 +2735,7 @@ index 0000000000..edeb0a7cc0
 +	{ 0x3d403190, 0x3818200 },
 +	{ 0x3d403194, 0x80303 },
 +	{ 0x3d4031b4, 0x100 },
-+
-+	/* default boot point */
++	{ 0x3d4030f4, 0xc99 },
 +	{ 0x3d400028, 0x0 },
 +};
 +
@@ -2829,8 +2823,8 @@ index 0000000000..edeb0a7cc0
 +	{ 0x220024, 0x1ab },
 +	{ 0x2003a, 0x0 },
 +	{ 0x20056, 0x3 },
-+	{ 0x120056, 0xa },
-+	{ 0x220056, 0xa },
++	{ 0x120056, 0x3 },
++	{ 0x220056, 0x3 },
 +	{ 0x1004d, 0xe00 },
 +	{ 0x1014d, 0xe00 },
 +	{ 0x1104d, 0xe00 },
@@ -4468,6 +4462,7 @@ index 0000000000..edeb0a7cc0
 +	.ddrphy_pie_num = ARRAY_SIZE(ddr_phy_pie),
 +	.fsp_table = { 3000, 400, 100, },
 +};
++
 diff --git a/board/freescale/imx8mm_navq/spl.c b/board/freescale/imx8mm_navq/spl.c
 new file mode 100644
 index 0000000000..5da659dbf9
