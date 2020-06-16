@@ -1,0 +1,31 @@
+From ee98f87d9b21618fe8d9f4eb1002dacc6440573a Mon Sep 17 00:00:00 2001
+From: Rogerio Silva <rogerio.silva@nxp.com>
+Date: Mon, 15 Jun 2020 12:50:53 -0300
+Subject: [PATCH] OV5645: Disable auto focus on initialization
+
+Temporarily disabled the auto focus fw download due to the
+long delay on kernel boot (about 20 seconds).
+
+Signed-off-by: Rogerio Silva <rogerio.silva@nxp.com>
+---
+ drivers/media/platform/mxc/capture/ov5645_mipi_v2.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/media/platform/mxc/capture/ov5645_mipi_v2.c b/drivers/media/platform/mxc/capture/ov5645_mipi_v2.c
+index ab4786ff32b1..964a00e1b6d4 100644
+--- a/drivers/media/platform/mxc/capture/ov5645_mipi_v2.c
++++ b/drivers/media/platform/mxc/capture/ov5645_mipi_v2.c
+@@ -2966,7 +2966,9 @@ static int ov5645_init_mode(enum ov5645_frame_rate frame_rate,
+ 		ArySize = ARRAY_SIZE(ov5645_setting_15fps_QSXGA_2592_1944);
+ 		retval = ov5645_download_firmware(pModeSetting, ArySize);
+ 
+-		ov5645_dnld_af_fw();
++		// Temporarily disabled the auto focus fw download due to the
++		// long delay on kernel boot.
++		//ov5645_dnld_af_fw();
+ 
+ 	} else if ((dn_mode == SUBSAMPLING && orig_dn_mode == SCALING) ||
+ 			(dn_mode == SCALING && orig_dn_mode == SUBSAMPLING)) {
+-- 
+2.17.1
+

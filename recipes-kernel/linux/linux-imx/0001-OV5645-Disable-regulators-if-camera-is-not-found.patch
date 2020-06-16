@@ -1,0 +1,92 @@
+From d9a2a188f969c3347f30c0c5e503924978543e22 Mon Sep 17 00:00:00 2001
+From: Rogerio Silva <rogerio.silva@nxp.com>
+Date: Tue, 9 Jun 2020 12:36:52 -0300
+Subject: [PATCH] OV5645: Disable regulators if camera is not found
+
+When camera is not found, the driver must also disable the power
+regulators to avoid kernel panic.
+
+Signed-off-by: Rogerio Silva <rogerio.silva@nxp.com>
+---
+ .../platform/mxc/capture/ov5645_mipi_v2.c     | 38 +++++++++----------
+ 1 file changed, 19 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/media/platform/mxc/capture/ov5645_mipi_v2.c b/drivers/media/platform/mxc/capture/ov5645_mipi_v2.c
+index 39774d5d3105..ab4786ff32b1 100644
+--- a/drivers/media/platform/mxc/capture/ov5645_mipi_v2.c
++++ b/drivers/media/platform/mxc/capture/ov5645_mipi_v2.c
+@@ -2344,6 +2344,21 @@ static int ov5645_regulator_enable(struct device *dev)
+ 	return ret;
+ }
+ 
++static void ov5645_regulator_disable(void)
++{
++	if (gpo_regulator)
++		regulator_disable(gpo_regulator);
++
++	if (analog_regulator)
++		regulator_disable(analog_regulator);
++
++	if (core_regulator)
++		regulator_disable(core_regulator);
++
++	if (io_regulator)
++		regulator_disable(io_regulator);
++}
++
+ static s32 ov5645_write_reg(u16 reg, u8 val)
+ {
+ 	u8 au8Buf[3] = {0};
+@@ -3014,14 +3029,7 @@ static int ov5645_s_power(struct v4l2_subdev *sd, int on)
+ 			if (regulator_enable(analog_regulator) != 0)
+ 				return -EIO;
+ 	} else if (!on && sensor->on) {
+-		if (analog_regulator)
+-			regulator_disable(analog_regulator);
+-		if (core_regulator)
+-			regulator_disable(core_regulator);
+-		if (io_regulator)
+-			regulator_disable(io_regulator);
+-		if (gpo_regulator)
+-			regulator_disable(gpo_regulator);
++		ov5645_regulator_disable();
+ 	}
+ 
+ 	sensor->on = on;
+@@ -3503,12 +3511,14 @@ static int ov5645_probe(struct i2c_client *client,
+ 	retval = ov5645_read_reg(OV5645_CHIP_ID_HIGH_BYTE, &chip_id_high);
+ 	if (retval < 0 || chip_id_high != 0x56) {
+ 		pr_warning("camera ov5645_mipi is not found\n");
++		ov5645_regulator_disable();
+ 		clk_disable_unprepare(ov5645_data.sensor_clk);
+ 		return -ENODEV;
+ 	}
+ 	retval = ov5645_read_reg(OV5645_CHIP_ID_LOW_BYTE, &chip_id_low);
+ 	if (retval < 0 || chip_id_low != 0x45) {
+ 		pr_warning("camera ov5645_mipi is not found\n");
++		ov5645_regulator_disable();
+ 		clk_disable_unprepare(ov5645_data.sensor_clk);
+ 		return -ENODEV;
+ 	}
+@@ -3551,17 +3561,7 @@ static int ov5645_remove(struct i2c_client *client)
+ 
+ 	ov5645_power_down(1);
+ 
+-	if (gpo_regulator)
+-		regulator_disable(gpo_regulator);
+-
+-	if (analog_regulator)
+-		regulator_disable(analog_regulator);
+-
+-	if (core_regulator)
+-		regulator_disable(core_regulator);
+-
+-	if (io_regulator)
+-		regulator_disable(io_regulator);
++	ov5645_regulator_disable();
+ 
+ 	return 0;
+ }
+-- 
+2.17.1
+
