@@ -1,0 +1,42 @@
+From 268d598cc58da26ba37630f6785e4df737417bee Mon Sep 17 00:00:00 2001
+From: Rogerio Silva <rogerio.silva@nxp.com>
+Date: Tue, 23 Jun 2020 13:53:55 -0300
+Subject: [PATCH] ARM64: dts: imx8mmnavq: Change SD2_CD pin for SDHC2
+
+Change SD2_CD pin from GPIO1_IO15 to GPIO2_IO12
+
+Signed-off-by: Rogerio Silva <rogerio.silva@nxp.com>
+---
+ arch/arm64/boot/dts/freescale/imx8mm-navq.dts | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+index 4024fdf56c46..d08c79581bbd 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+@@ -210,12 +210,9 @@
+ 	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
+ 	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
+ 	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
+-	cd-gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
++	cd-gpios = <&gpio2 12 GPIO_ACTIVE_LOW>;
+ 	bus-width = <4>;
+-	vmmc-supply = <&reg_usdhc2_vmmc>;
+ 	status = "okay";
+-	/delete-property/ mmc-pwrseq;
+-        /delete-property/ cap-power-off-card;
+ };
+ 
+ &usdhc3 {
+@@ -662,7 +659,7 @@
+ 
+ 	pinctrl_usdhc2_gpio: usdhc2grpgpio {
+ 		fsl,pins = <
+-			MX8MM_IOMUXC_GPIO1_IO15_GPIO1_IO15	0x1c4
++			MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c4
+ 		>;
+ 	};
+ 
+-- 
+2.17.1
+
