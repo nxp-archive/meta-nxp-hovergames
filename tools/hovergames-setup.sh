@@ -32,7 +32,7 @@ exit_message ()
 
 usage()
 {
-    echo -e "\nUsage: source imx-setup-release.sh
+    echo -e "\nUsage: source hovergames-setup.sh
     Optional parameters: [-b build-dir] [-h]"
 echo "
     * [-b build-dir]: Build directory, if unspecified script uses 'build' as output directory
@@ -170,10 +170,12 @@ META_FSL_BSP_RELEASE="${CWD}/sources/meta-imx/meta-bsp"
 echo "" >> $BUILD_DIR/conf/bblayers.conf
 echo "# i.MX Yocto Project Release layers" >> $BUILD_DIR/conf/bblayers.conf
 hook_in_layer meta-imx/meta-bsp
-hook_in_layer meta-imx/meta-distro
+hook_in_layer meta-imx/meta-sdk
+hook_in_layer meta-imx/meta-ml
 
 echo "" >> $BUILD_DIR/conf/bblayers.conf
 echo "BBLAYERS += \"\${BSPDIR}/sources/meta-browser\"" >> $BUILD_DIR/conf/bblayers.conf
+echo "BBLAYERS += \"\${BSPDIR}/sources/meta-clang\"" >> $BUILD_DIR/conf/bblayers.conf
 echo "BBLAYERS += \"\${BSPDIR}/sources/meta-rust\"" >> $BUILD_DIR/conf/bblayers.conf
 echo "BBLAYERS += \"\${BSPDIR}/sources/meta-openembedded/meta-gnome\"" >> $BUILD_DIR/conf/bblayers.conf
 echo "BBLAYERS += \"\${BSPDIR}/sources/meta-openembedded/meta-networking\"" >> $BUILD_DIR/conf/bblayers.conf
@@ -181,6 +183,9 @@ echo "BBLAYERS += \"\${BSPDIR}/sources/meta-openembedded/meta-filesystems\"" >> 
 
 echo "BBLAYERS += \"\${BSPDIR}/sources/meta-qt5\"" >> $BUILD_DIR/conf/bblayers.conf
 echo "BBLAYERS += \"\${BSPDIR}/sources/meta-python2\"" >> $BUILD_DIR/conf/bblayers.conf
+
+echo "BBLAYERS += \"\${BSPDIR}/sources/meta-nxp-hovergames/meta-hovergames\"" >> $BUILD_DIR/conf/bblayers.conf
+echo "BBLAYERS += \"\${BSPDIR}/sources/meta-nxp-hovergames/meta-hovergames-distro\"" >> $BUILD_DIR/conf/bblayers.conf
 
 echo BSPDIR=$BSPDIR
 echo BUILD_DIR=$BUILD_DIR
