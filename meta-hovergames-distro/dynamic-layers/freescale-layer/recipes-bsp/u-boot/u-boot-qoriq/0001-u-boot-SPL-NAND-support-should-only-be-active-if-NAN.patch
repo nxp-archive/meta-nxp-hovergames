@@ -1,0 +1,42 @@
+From a37199f03e64372fa2a33197867012329332322d Mon Sep 17 00:00:00 2001
+From: Heinz Wrobel <Heinz.Wrobel@nxp.com>
+Date: Thu, 17 Jan 2019 13:11:19 +0200
+Subject: [PATCH 15/15] u-boot: SPL NAND support should only be active if NAND
+ boot is active on LS2
+
+Signed-off-by: Heinz Wrobel <Heinz.Wrobel@nxp.com>
+Signed-off-by: Dan Nica <dan.nica@nxp.com>
+---
+ include/configs/ls2080a_common.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/include/configs/ls2080a_common.h b/include/configs/ls2080a_common.h
+index 576785e..27d1d29 100644
+--- a/include/configs/ls2080a_common.h
++++ b/include/configs/ls2080a_common.h
+@@ -223,6 +223,7 @@ unsigned long long get_qixis_addr(void);
+ 
+ #define CONFIG_PANIC_HANG	/* do not reset board on panic */
+ 
++#ifdef CONFIG_SPL
+ #define CONFIG_SPL_BSS_START_ADDR	0x80100000
+ #define CONFIG_SPL_BSS_MAX_SIZE		0x00100000
+ #define CONFIG_SPL_FRAMEWORK
+@@ -232,12 +233,14 @@ unsigned long long get_qixis_addr(void);
+ #define CONFIG_SPL_TEXT_BASE		0x1800a000
+ 
+ #ifdef CONFIG_NAND_BOOT
++#define CONFIG_SPL_NAND_SUPPORT
+ #define CONFIG_SYS_NAND_U_BOOT_DST	0x80400000
+ #define CONFIG_SYS_NAND_U_BOOT_START	CONFIG_SYS_NAND_U_BOOT_DST
+ #endif
+ #define CONFIG_SYS_SPL_MALLOC_SIZE	0x00100000
+ #define CONFIG_SYS_SPL_MALLOC_START	0x80200000
+ #define CONFIG_SYS_MONITOR_LEN		(1024 * 1024)
++#endif
+ 
+ #define CONFIG_SYS_BOOTM_LEN   (64 << 20)      /* Increase max gunzip size */
+ 
+-- 
+2.7.4
+

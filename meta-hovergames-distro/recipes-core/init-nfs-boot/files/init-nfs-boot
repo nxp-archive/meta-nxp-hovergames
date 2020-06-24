@@ -1,0 +1,115 @@
+#!/bin/bash
+#
+# Boot Linux from ramdisk, start networking services, insert kernel modules
+# Boot actual rootfs from NFS, as provided by command line parameters
+# Copyright 2018 NXP
+# SPDX-License-Identifier: BSD-3-Clause
+#
+
+mount -t proc -o nodev,noexec,nosuid proc /proc
+mount -t sysfs -o nodev,noexec,nosuid sysfs /sys
+mount -t debugfs debugfs /sys/kernel/debug
+
+# Defaults
+init="/sbin/init"
+nfsroot=
+nfsrootopts=
+mountpoint="/newroot"
+readonly=
+
+ip=
+serverip=
+hwip=
+netmask=
+hostname=
+device=
+autoconf=
+dns0=
+dns1=
+
+# Parse command line options
+for i in $(cat /proc/cmdline); do
+	case $i in
+		init=*)
+			init=${i#init=}
+			;;
+		ip=*)
+			aux=${i#ip=}
+			IFS=':' read -r ip serverip gwip netmask hostname device autoconf dns0 dns1 <<< "$aux"
+			unset aux
+			;;
+		nfsroot=*)
+			nfsroot=${i#nfsroot=}
+			nfsrootopts=$(echo $nfsroot | cut -s -f 2- -d ',')
+			nfsroot=$(echo $nfsroot | cut -f 1 -d ',')
+			nfsrootopts=${nfsrootopts:+-o ${nfsrootopts}}
+			;;
+		ro)
+			readonly=-r
+			;;
+		rw)
+			readonly=-w
+			;;
+	esac
+done
+
+if [ -z "$nfsroot" ]; then
+        echo "Did not specify \"nfsroot=\" option."
+	exec /bin/bash
+fi
+
+lsmod | grep -q "^sja1105pqrs\b" > /dev/null ||
+    insmod /lib/modules/`uname -r`/kernel/drivers/spi/sja1105pqrs.ko
+lsmod | grep -q "^nxp\b" > /dev/null ||
+    insmod /lib/modules/`uname -r`/kernel/drivers/net/phy/nxp/nxp.ko
+
+# Wait for sja to finish programming
+if lsmod | grep -q "^sja1105pqrs\b"; then
+    while [ "$(lsmod | grep "^sja1105pqrs\b" | awk '{ print $3}')" != "0" ]; do
+        sleep 1
+    done
+fi
+
+/etc/init.d/rpcbind start
+/etc/init.d/networking start
+
+if [ "$ip" ] && [ "$device" ]; then
+    # Stop DHCP to assign U-BOOT address
+    if [ -r "/var/run/udhcpc.$device.pid" ]; then
+        kill -9 $(cat /var/run/udhcpc.$device.pid)
+    fi
+    ifconfig "$device" "$ip" ${netmask:+netmask $netmask}
+    if [ "x$gwip" != "x" ]; then
+        ip route add default via $gwip dev $device
+    fi
+fi
+
+mkdir $mountpoint
+
+echo -n "Mounting ${nfsroot} on ${mountpoint}... "
+mount.nfs ${readonly} ${nfsrootopts} ${nfsroot} ${mountpoint} 2> /dev/null
+if [ "$?" = "0" ]; then
+	echo "Mounted ${nfsroot}"
+
+	if [ -x "${mountpoint}/${init}" ]; then
+		umount /sys/kernel/debug
+		umount /proc
+		umount /sys
+		exec switch_root ${mountpoint} "${init}"
+	fi
+fi
+
+# If we reached this point, something went wrong
+DEBUG_FILE=/nfsdebug
+
+ifconfig -a > $DEBUG_FILE
+echo >> $DEBUG_FILE
+lsmod >> $DEBUG_FILE
+echo >> $DEBUG_FILE
+mount >> $DEBUG_FILE
+echo >> $DEBUG_FILE
+
+echo -e "\nError while initializing nfs boot. Verify the debug log: $DEBUG_FILE."
+echo "Switching to minimal rootfs"
+
+exec /sbin/init
