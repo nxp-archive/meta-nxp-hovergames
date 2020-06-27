@@ -19,7 +19,7 @@ Download the Yocto Project BSP
 ```
 $ mkdir hovergames
 $ cd hovergames
-$ repo init -u ssh://bitbucket.sw.nxp.com/imx/imx-manifest -b linux-zeus-internal -m hovergames.xml
+$ repo init -u ssh://bitbucket.sw.nxp.com/imx/imx-manifest -b linux-zeus-internal -m int-5.4.24-2.1.0_hovergames.xml
 $ repo sync
 ```
 
@@ -27,8 +27,9 @@ Create a new build folder
 -------------------------
 
 If you want to create a new build folder that includes the internal layer meta-fsl-mpu-internal:
+
 ```
-$ MACHINE=imx8mmnavq DISTRO=fsl-imx-internal-xwayland source fsl-setup-internal-build.sh -b build
+$ MACHINE=imx8mmnavq DISTRO=fsl-imx-xwayland source imx-setup-release.sh -b build
 ```
 
 Use an existing build folder
