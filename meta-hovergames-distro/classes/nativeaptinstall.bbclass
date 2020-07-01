@@ -480,7 +480,7 @@ fakeroot aptget_update_end() {
 
 	# Delete any temp proxy lines we may have added in the target rootfs
 	if [ -f "${APTGET_CHROOT_DIR}/etc/apt/apt.conf" ]; then
-		sed -i '/^Acquire::.+; \/* Yocto *\/\s*$/d' "${APTGET_CHROOT_DIR}/etc/apt/apt.conf"
+		sed -i '/^Acquire::.*; \/\* Yocto \*\/\s*$/d' "${APTGET_CHROOT_DIR}/etc/apt/apt.conf"
 	fi
 
 	# Now that we are done in qemu land, we reinstate the original
