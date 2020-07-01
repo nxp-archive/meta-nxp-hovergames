@@ -1,4 +1,4 @@
-# A simple image with a Ubuntu rootfs
+# A NavQ image with an Ubuntu rootfs
 #
 # Note that we have a tight dependency to ubuntu-base
 # and that we cannot just install arbitrary Yocto packages to avoid
@@ -93,12 +93,12 @@ APTGET_EXTRA_SOURCE_PACKAGES += "\
 	iproute2 \
 "
 
-# Add user ubuntu with password ubuntu and default shell bash
+# Add user navq with password navq and default shell bash
 USER_SHELL_BASH = "/bin/bash"
-USER_PASSWD_UBUNTU = "ubuntu"
-APTGET_ADD_USERS = "ubuntu:${USER_PASSWD_UBUNTU}:${USER_SHELL_BASH}"
+USER_PASSWD_NAVQ = "\$5\$nEa6qsZxa\$YepRevGzGA375yrEUvZgoeXnFGEgfFrOrFeGyi.Gp09"
+APTGET_ADD_USERS = "navq:${USER_PASSWD_NAVQ}:${USER_SHELL_BASH}"
 
-HOST_NAME = "ubuntu-${MACHINE_ARCH}"
+HOST_NAME = "${MACHINE_ARCH}"
 
 ##############################################################################
 # NOTE: We cannot install arbitrary Yocto packages as they will
