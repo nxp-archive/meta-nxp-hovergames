@@ -85,20 +85,27 @@ APTGET_SKIP_FULLUPGRADE ?= "1"
 # Set this to anything but 0 to skip performing apt-get clean at the end
 APTGET_SKIP_CACHECLEAN ?= "0"
 
+# For perfect compatibility, we run in emulation only.
+# We can however speed up package installs to some extent
+APTGET_USE_NATIVE_DPKG ?= "1"
+
 # Minimum package needs for apt to work right. Nothing else.
-APTGET_INIT_PACKAGES ?= "apt-transport-https ca-certificates software-properties-common apt-utils"
+APTGET_INIT_FAKETOOLS_PACKAGES ?= "dbus systemd"
+APTGET_INIT_PACKAGES ?= "dbus-user-session apt-transport-https ca-certificates software-properties-common apt-utils"
+
+APTGET_REMAINING_FAKETOOLS_PACKAGES ?= "kmod"
 
 APTGET_DL_CACHE ?= "${DL_DIR}/apt-get/${TRANSLATED_TARGET_ARCH}"
 APTGET_CACHE_DIR ?= "${APTGET_CHROOT_DIR}/var/cache/apt/archives"
 
-DEPENDS += "qemu-native virtual/${TARGET_PREFIX}binutils rsync-native coreutils-native"
+DEPENDS += "qemu-native virtual/${TARGET_PREFIX}binutils rsync-native coreutils-native dpkg-native"
 
-# script and function references which reside in a different location
-# in staging, or references that have to be taken from chroot afterall.
-PSEUDO_CHROOT_XTRANSLATION = ""
+# We need the proper parameter version for the tool
+APTGET_TARGET_ARCH="${@d.getVar('TRANSLATED_TARGET_ARCH', True).replace("aarch64", "arm64")}"
 
 # To run native executables required by some installation scripts
 PSEUDO_CHROOT_XPREFIX="${STAGING_BINDIR_NATIVE}/qemu-${TRANSLATED_TARGET_ARCH}"
+DPKG_NATIVE="${STAGING_BINDIR_NATIVE}/dpkg"
 
 # When running in qemu, we don't really want libpseudo as qemu is already
 # running with libpseudo. We want to be as chroot as possible and we
@@ -140,7 +147,6 @@ ${PSEUDO_PREFIX}/*:\
 ${PSEUDO_LIBDIR}*/*:\
 ${PSEUDO_LOCALSTATEDIR}*:\
 ${PSEUDO_LOCALSTATEDIR}:\
-/proc/*:\
 /dev/null:\
 /dev/zero:\
 /dev/random:\
@@ -149,11 +155,13 @@ ${PSEUDO_LOCALSTATEDIR}:\
 /dev/pts:\
 /dev/pts/*:\
 /dev/ptmx:\
+${DPKG_NATIVE}:\
 "
 
 ENV_HOST_PROXIES ?= ""
 APTGET_HOST_PROXIES ?= ""
 APTGET_EXECUTABLE ?= "/usr/bin/apt-get"
+APTGET_DEFAULT_OPTS ?= "-qy -o=Dpkg::Use-Pty=0"
 
 aptget_update_presetvars() {
 	export PSEUDO_PASSWD="${APTGET_CHROOT_DIR}:${STAGING_DIR_NATIVE}"
@@ -177,8 +185,44 @@ aptget_update_presetvars() {
 
 	# Add any proxies from the host, according to
 	# https://wiki.yoctoproject.org/wiki/Working_Behind_a_Network_Proxy
-	ENV_HOST_PROXIES="${ENV_HOST_PROXIES}"
+        # Note that we split environment setup and rootfs setup!
+        # Rootfs proxy setup is only done once in aptget_setup_proxies
+        # Environment setup needs to be done every time in
+        # aptget_update_presetvars
 
+	ENV_HOST_PROXIES="${ENV_HOST_PROXIES}"
+	while [ -n "$ENV_HOST_PROXIES" ]; do
+		IFS=" =_" read -r proxy_type proxy_string proxy_val ENV_HOST_PROXIES <<END_PROXY
+$ENV_HOST_PROXIES
+END_PROXY
+		if [ "$proxy_string" != "proxy" ]; then
+			# We already warn when setting up the rootfs
+                        #bbwarn "Invalid proxy \"$proxy\""
+			continue
+		fi
+
+		export QEMU_SET_ENV="$QEMU_SET_ENV,${proxy_type}_${proxy_string}=$proxy_val"
+	done
+
+}
+
+fakeroot aptget_setup_proxies() {
+	# Add any proxies from the host, according to
+	# https://wiki.yoctoproject.org/wiki/Working_Behind_a_Network_Proxy
+        # Note that we split environment setup and rootfs setup!
+        # Rootfs proxy setup is only done once in aptget_setup_proxies
+        # Environment setup needs to be done every time in
+        # aptget_update_presetvars
+
+	# apt may not be fully configured at this stage
+        mkdir -p "${APTGET_CHROOT_DIR}/etc/apt/apt.conf.d"
+
+        # We use the faketool mechanism to install our proxies in a
+        # reversible way
+        xf="/__etc_apt_apt.conf.d_01yoctoinstallproxies__"
+        rm -f "${APTGET_CHROOT_DIR}$xf"
+
+	ENV_HOST_PROXIES="${ENV_HOST_PROXIES}"
 	while [ -n "$ENV_HOST_PROXIES" ]; do
 		IFS=" =_" read -r proxy_type proxy_string proxy_val ENV_HOST_PROXIES <<END_PROXY
 $ENV_HOST_PROXIES
@@ -188,41 +232,275 @@ END_PROXY
 			continue
 		fi
 
-		export QEMU_SET_ENV="$QEMU_SET_ENV,${proxy_type}_${proxy_string}=$proxy_val"
-
 		# If APTGET_HOST_PROXIES is not defined in local.conf, then
 		# apt.conf is populated using proxy information in ENV_HOST_PROXIES
 		if [ -z "${APTGET_HOST_PROXIES}" ]; then
-			echo >>"${APTGET_CHROOT_DIR}/etc/apt/apt.conf" "Acquire::$proxy_type::proxy \"$proxy_val/\"; /* Yocto */"
+			echo >>"${APTGET_CHROOT_DIR}$xf" "Acquire::$proxy_type::proxy \"$proxy_val/\"; /* Yocto */"
 		fi
 	done
 
-	export etc_hosts_renamed="${APTGET_CHROOT_DIR}/etc/hosts.yocto"
-	export etc_resolv_conf_renamed="${APTGET_CHROOT_DIR}/etc/resolv.conf.yocto"
+	APTGET_HOST_PROXIES="${APTGET_HOST_PROXIES}"
+	while [ -n "$APTGET_HOST_PROXIES" ]; do
+		read -r proxy <<END_PROXY
+$APTGET_HOST_PROXIES
+END_PROXY
+		echo >>"${APTGET_CHROOT_DIR}$xf" "$proxy"
+	done
+
+        if [ -e $xf ]; then
+                aptget_always_install_faketool "/etc/apt/apt.conf.d/01yoctoinstallproxies" $xf
+        fi
+}
+
+fakeroot aptget_preserve_file() {
+        if [ -e "${APTGET_CHROOT_DIR}$1" ] || [ -L "${APTGET_CHROOT_DIR}$1" ]; then
+                mv -f "${APTGET_CHROOT_DIR}$1" "${APTGET_CHROOT_DIR}$1.yocto"
+                return
+        fi
+        false
+}
+
+aptget_file_is_preserved() {
+        test -e "${APTGET_CHROOT_DIR}$1.yocto" || test -L "${APTGET_CHROOT_DIR}$1.yocto"
+}
+
+fakeroot aptget_restore_file() {
+        if aptget_file_is_preserved "$1"; then
+                mv -f "${APTGET_CHROOT_DIR}$1.yocto" "${APTGET_CHROOT_DIR}$1"
+        fi
+}
+
+aptget_link_is_pointing_to() {
+        test -L "${APTGET_CHROOT_DIR}$1" && test "`readlink ${APTGET_CHROOT_DIR}$1`" = "$2"
+}
+
+fakeroot aptget_delete_fakeproc() {
+        # Obviously we can't have a /proc/1 in an offline rootfs.
+        # So we remove our temporary helper again
+        rm -f "${APTGET_CHROOT_DIR}/proc/self"
+        rm -fr "${APTGET_CHROOT_DIR}/proc/1"
+}
+
+fakeroot aptget_install_fakeproc() {
+        # This is magic to fool package installations into thinking
+        # good things about our rootfs and our runtime environment
+        mkdir -p "${APTGET_CHROOT_DIR}/proc/1"
+        ln -s "/" "${APTGET_CHROOT_DIR}/proc/1/root"
+        ln -s "1" "${APTGET_CHROOT_DIR}/proc/self"
+}
+
+fakeroot aptget_delete_faketool() {
+        if aptget_link_is_pointing_to $1 $2; then
+                aptget_restore_file $1
+        fi
+        rm -f "${APTGET_CHROOT_DIR}$2"
+}
+
+fakeroot aptget_always_install_faketool() {
+        if ! aptget_link_is_pointing_to $1 $2; then
+                aptget_preserve_file $1 || true
+                ln -s "$2" "${APTGET_CHROOT_DIR}$1"
+        fi
+}
+
+fakeroot aptget_install_faketool() {
+        if ! aptget_link_is_pointing_to $1 $2; then
+                if aptget_preserve_file $1; then
+                        ln -s "$2" "${APTGET_CHROOT_DIR}$1"
+                fi
+        fi
+}
+
+fakeroot aptget_delete_faketools() {
+        aptget_delete_faketool "/bin/lsmod"         "/__fake_lsmod__"
+        xt="/bin/udevadm"
+        if ! aptget_file_is_preserved $xt; then
+                xt="/sbin/udevadm"
+        fi
+        aptget_delete_faketool $xt                  "/__fake_udevadm__"
+        aptget_delete_faketool "/bin/mountpoint"    "/__fake_mountpoint__"
+        aptget_delete_faketool "/usr/bin/systemctl" "/__fake_systemctl__"
+        aptget_delete_faketool "/usr/bin/dbus-send" "/__fake_dbus-send__"
+        aptget_delete_faketool "/usr/bin/dpkg"      "/__dpkgwrapper__"
+}
+
+fakeroot aptget_install_faketools() {
+        # Very ugly workaround. Turns out that some packages use
+        # lsmod, e.g., console-setup. lsmod wants to access the
+        # module database via sysfs. We are not in a live system,
+        # so sysfs does not exist, which leads to errors. These
+        # errors then make an otherwise perfectly valid install
+        # fail. Our workaround is to temporarily replace lsmod.
+        # This is ok as we don't have any modules loaded anyway.
+        xf="/__fake_lsmod__"
+        if [ ! -e "${APTGET_CHROOT_DIR}$xf" ]; then
+                cat << EOF >${APTGET_CHROOT_DIR}$xf
+#!/bin/sh
+echo 'Module                  Size  Used by'
+EOF
+                chmod a+x "${APTGET_CHROOT_DIR}$xf"
+        fi
+        aptget_install_faketool "/bin/lsmod"            $xf
+
+        # Turns out that a good number of package installs trigger
+        # udevadm. In the past this was benign and ignored in chroot
+        # environments. This is currently not the case for Ubuntu 20
+        # So we install a fake udevadm temporarily to work around the
+        # problem which in fact simplifies installs for all versions.
+        xf="/__fake_udevadm__"
+        if [ ! -e "${APTGET_CHROOT_DIR}$xf" ]; then
+cat << EOF >${APTGET_CHROOT_DIR}$xf
+#!/bin/sh
+case \$1 in
+        trigger|control|settle|monitor)
+                echo "udevadm command \$1 ignored"
+                exit 0
+                ;;
+esac
+udevadm.yocto "\$@"
+EOF
+                chmod a+x "${APTGET_CHROOT_DIR}$xf"
+        fi
+        xt="/bin/udevadm"
+        if [ ! -e "${APTGET_CHROOT_DIR}$xt" ]; then
+                xt="/sbin/udevadm"
+        fi
+        aptget_install_faketool $xt                     $xf
+
+        # Packages like Java use "mountpoint" to check if "/proc" is
+        # real. For us, it isn't real, so we need to fake things
+        xf="/__fake_mountpoint__"
+        if [ ! -e "${APTGET_CHROOT_DIR}$xf" ]; then
+                cat << EOF >${APTGET_CHROOT_DIR}$xf
+#!/bin/sh
+for i in \$@; do
+        case \$i in
+                -*)
+                        # Skip
+                        ;;
+                /proc)
+                        echo "Pretending that /proc is a mountpoint"
+                        exit 0
+                        ;;
+        esac
+done
+mountpoint.yocto "\$@"
+EOF
+                chmod a+x "${APTGET_CHROOT_DIR}$xf"
+        fi
+        aptget_install_faketool "/bin/mountpoint"       $xf
+
+        # Reloading system daemons causes log issues, so we want to
+        # avoid that. We can't reload anything offline anyway.
+        xf="/__fake_systemctl__"
+        if [ ! -e "${APTGET_CHROOT_DIR}$xf" ]; then
+                cat << EOF >${APTGET_CHROOT_DIR}$xf
+#!/bin/sh
+# Hack! If invoked without parameters, we
+# assume is was invoked via a "runlevel" symlink
+# Unfortunately there doesn't seem to be a way
+# to determine the symlink name that invokes a
+# script
+args="runlevel"
+if [ \$# -ne 0 ]; then
+        args="\$@"
+fi
+for i in \$args; do
+        case \$i in
+                runlevel)
+                        echo "N 1"
+                        exit 0
+                        ;;
+                list-units)
+                        echo "UNIT          LOAD   ACTIVE SUB    DESCRIPTION"
+                        echo "rescue.target loaded active active Yoco Installation"
+                        exit 0
+                        ;;
+                is-active|is-failed)
+                        # Nothing is active or failed!
+                        exit 1
+                        ;;
+                daemon-reload|daemon-reexec|reload|restart)
+                        exit 0
+                        ;;
+                list-sockets|list-tiemrs|status|list-machines)
+                        # Silent ok
+                        exit 0
+                        ;;
+        esac
+done
+echo "Invoking: systemctl.yocto \$@"
+systemctl.yocto "\$@"
+EOF
+                chmod a+x "${APTGET_CHROOT_DIR}$xf"
+        fi
+        aptget_install_faketool "/usr/bin/systemctl"    $xf
+
+        # dbus-send is another on of those that do not make sense
+        # offline
+        xf="/__fake_dbus-send__"
+        if [ ! -e "${APTGET_CHROOT_DIR}$xf" ]; then
+                cat << EOF >${APTGET_CHROOT_DIR}$xf
+#!/bin/sh
+exit 20
+EOF
+                chmod a+x "${APTGET_CHROOT_DIR}$xf"
+        fi
+        aptget_install_faketool "/usr/bin/dbus-send"    $xf
+
+	if [ "${APTGET_USE_NATIVE_DPKG}" != "0" ]; then
+                # We can speed up specfic operations.
+                xf="/__dpkgwrapper__"
+                cat << EOF >${APTGET_CHROOT_DIR}$xf
+#!/bin/sh
+for i in \$@; do
+        case \$i in
+                --)
+                        break
+                        ;;
+                --unpack)
+                        ${DPKG_NATIVE} --admindir=/var/lib/dpkg --instdir=/  "\$@"
+                        exit
+                        ;;
+        esac
+done
+dpkg.yocto "\$@"
+EOF
+                chmod a+x "${APTGET_CHROOT_DIR}$xf"
+
+
+                aptget_install_faketool "/usr/bin/dpkg" $xf
+        fi
+}
+
+fakeroot aptget_run_aptget() {
+        xd=`date -R`
+        bbnote "${xd}: ${APTGET_EXECUTABLE} ${APTGET_DEFAULT_OPTS} $@"
+        aptget_install_faketools
+        test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} ${APTGET_DEFAULT_OPTS} "$@" || aptgetfailure=1
+        aptget_delete_faketools
 }
 
 fakeroot aptget_populate_cache_from_sstate() {
 	if [ -e "${APTGET_CACHE_DIR}" ]; then
 		mkdir -p "${APTGET_DL_CACHE}"
-		chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy check
-		rsync -v -d -u -t --include *.deb "${APTGET_DL_CACHE}/" "${APTGET_CACHE_DIR}"
-		chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy check
+		chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} ${APTGET_DEFAULT_OPTS} check
+		rsync -d -u -t --include *.deb "${APTGET_DL_CACHE}/" "${APTGET_CACHE_DIR}"
+		chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} ${APTGET_DEFAULT_OPTS} check
 	fi
 }
 
 fakeroot aptget_save_cache_into_sstate() {
 	if [ -e "${APTGET_CACHE_DIR}" ]; then
 		mkdir -p "${APTGET_DL_CACHE}"
-		chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy check
-		rsync -v -d -u -t --include *.deb "${APTGET_CACHE_DIR}/" "${APTGET_DL_CACHE}" 
+		chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} ${APTGET_DEFAULT_OPTS} check
+		rsync -d -u -t --include *.deb "${APTGET_CACHE_DIR}/" "${APTGET_DL_CACHE}"
 	fi
 }
 
 fakeroot aptget_update_begin() {
 	# Once the basic rootfs is unpacked, we use the local passwd
 	# information.
-	set -x
-
 	aptget_update_presetvars;
 
 	aptgetfailure=0
@@ -231,27 +509,10 @@ fakeroot aptget_update_begin() {
 	# need to protect the host and DNS config. We do a bit of a
 	# convoluted stunt here to hopefully be flexible enough about
 	# different rootfs types.
-	if [ -e "${APTGET_CHROOT_DIR}/etc/hosts" ]; then
-		rm -f "$etc_hosts_renamed"
-		mv "${APTGET_CHROOT_DIR}/etc/hosts" "$etc_hosts_renamed"
-	fi
-	cp "/etc/hosts" "${APTGET_CHROOT_DIR}/etc/hosts"
-	if [ -e "${APTGET_CHROOT_DIR}/etc/resolv.conf" ]; then
-		rm -f "$etc_resolv_conf_renamed"
-		mv "${APTGET_CHROOT_DIR}/etc/resolv.conf" "$etc_resolv_conf_renamed"
-	fi
-	cp "/etc/resolv.conf" "${APTGET_CHROOT_DIR}/etc/resolv.conf"
-
-	# apt may not be fully configured at this stage
-	mkdir -p "${APTGET_CHROOT_DIR}/etc/apt"
-
-	APTGET_HOST_PROXIES="${APTGET_HOST_PROXIES}"
-	while [ -n "$APTGET_HOST_PROXIES" ]; do
-		read -r proxy <<END_PROXY
-$APTGET_HOST_PROXIES
-END_PROXY
-		echo >>"${APTGET_CHROOT_DIR}/etc/apt/apt.conf" "$proxy"
-	done
+	cp "/etc/hosts" "${APTGET_CHROOT_DIR}/__etchosts__"
+        aptget_install_faketool "/etc/hosts" "/__etchosts__"
+	cp "/etc/resolv.conf" "${APTGET_CHROOT_DIR}/__etcresolvconf__"
+        aptget_install_faketool "/etc/resolv.conf" "/__etcresolvconf__"
 
 	# We need to set at least one (dummy) user and we set passwords for all of them.
 	# useradd is not debian, but good enough for now.
@@ -293,10 +554,27 @@ END_USER
 		done
 	fi
 
+        # This is magic to fool package installations into thinking
+        # good things about our rootfs
+        aptget_install_fakeproc
+
 	# Yocto environment. If we kept apt packages privately from
 	# a prior run, prepopulate the package cache locally to avoid
 	# costly downloads
 	aptget_populate_cache_from_sstate
+
+        # From this point on, we may need network access
+        aptget_setup_proxies
+
+	if [ "${APTGET_USE_NATIVE_DPKG}" != "0" ]; then
+                # We need to establish the proper architecture globally, so
+                # that we do not pick it up from dpkg. We may use a native
+                # dpkg for some things, so we do not want to run into issues
+                # as dpkg-native defaults to host architecture.
+                mkdir -p "${APTGET_CHROOT_DIR}/etc/apt/apt.conf.d"
+                chroot "${APTGET_CHROOT_DIR}" /usr/bin/dpkg --add-architecture ${APTGET_TARGET_ARCH}
+                echo >"${APTGET_CHROOT_DIR}/etc/apt/apt.conf.d/01yoctoinstallarchitecture" "APT::Architecture \"${APTGET_TARGET_ARCH}\";"
+        fi
 
 	# Before we can play with the package manager in any
 	# meaningful way, we need to sync the database.
@@ -307,10 +585,28 @@ END_USER
 	fi
 
 	# Prepare apt to be generically usable
-	chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy update
+	chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} ${APTGET_DEFAULT_OPTS} update
+
+        # See that everything is downloaded first. This is an
+        # optimization which will help to avoid failures late in the
+        # game due to bad intenet connections and helps the user.
+        # It means that no matter what else might happen, the package
+        # cache should be properly populated then for reruns.
+        # Given how we do the PPA setup, we have to work this in two
+        # stages though and can't download everything right away.
+        aptget_run_aptget -d install ${APTGET_INIT_FAKETOOLS_PACKAGES} ${APTGET_INIT_PACKAGES}
+
+	if [ -n "${APTGET_INIT_FAKETOOLS_PACKAGES}" ]; then
+                # Packages used by faketools are installed
+                # individually so that faketools are used at the right
+                # times
+		x="${APTGET_INIT_FAKETOOLS_PACKAGES}"
+		for i in $x; do
+                        aptget_run_aptget install $i
+                done
+	fi
 	if [ -n "${APTGET_INIT_PACKAGES}" ]; then
-		x="${APTGET_INIT_PACKAGES}"
-		test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy install $x || aptgetfailure=1
+                aptget_run_aptget install ${APTGET_INIT_PACKAGES}
 	fi
 
 	if [ -n "${APTGET_EXTRA_PPA}" ]; then
@@ -323,21 +619,25 @@ END_USER
 
 		# For apt-key to be reliable, we need both gpg and dirmngr
 		# As workaround for an 18.04 gpg regressions, we also use curl
-		APTGET_GPG_BROKEN=""
+                # In fact, for now we use it generally, because gpg can't
+                # talk to dirmngr properly in the emulated environment.
+                # This needs to be debugged (FIX!), but the curl method
+                # works, too.
+		APTGET_GPG_BROKEN="1"
 		if [ "$DISTRO_RELEASE" = "18.04" ]; then
 			APTGET_GPG_BROKEN="1"
 		fi
 		if [ -n "$APTGET_GPG_BROKEN" ]; then
-			test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy install curl gnupg2 || aptgetfailure=1
+			x="gnupg curl"
 		else
-			test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy install gnupg2 dirmngr || aptgetfailure=1
+			x="gnupg dirmngr"
 		fi
+                aptget_run_aptget install $x
 
 		# Tricky variable hack to get word parsing for Yocto
 		# variables in the shell.
 		x="${APTGET_EXTRA_PPA}"
 		for ppa in $x; do
-
 			IFS=';' read -r ppa_addr ppa_server ppa_hash ppa_type ppa_file_orig <<END_PPA
 $ppa
 END_PPA
@@ -368,49 +668,65 @@ END_PPA
 			if [ -n "$APTGET_GPG_BROKEN" ]; then
 				HTTPPPASERVER=`echo $ppa_server | sed "s/hkp:/http:/g"`
 				mkdir -p "${APTGET_CHROOT_DIR}/tmp/gpg"
+                                mkdir -p "${APTGET_CHROOT_DIR}/etc/apt/trusted.gpg.d/"
 				chmod 0600 "${APTGET_CHROOT_DIR}/tmp/gpg"
 				chroot "${APTGET_CHROOT_DIR}" /usr/bin/curl -sL "$HTTPPPASERVER/pks/lookup?op=get&search=0x$ppa_hash" | chroot "${APTGET_CHROOT_DIR}" /usr/bin/gpg --homedir /tmp/gpg --import || true
-				chroot "${APTGET_CHROOT_DIR}" /usr/bin/gpg --homedir /tmp/gpg --export $ppa_hash | chroot "${APTGET_CHROOT_DIR}" /usr/bin/tee "/etc/apt/trusted.gpg.d/$ppa_file_orig.gpg"
+				chroot "${APTGET_CHROOT_DIR}" /usr/bin/gpg --homedir /tmp/gpg --export $ppa_hash > "${APTGET_CHROOT_DIR}/etc/apt/trusted.gpg.d/$ppa_file_orig.gpg"
 				rm -rf "${APTGET_CHROOT_DIR}/tmp/gpg"
 			else
 				chroot "${APTGET_CHROOT_DIR}" /usr/bin/apt-key adv --keyserver $ppa_server $ppa_proxy --recv-key $ppa_hash
 			fi
-
 		done
-		test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy update || aptgetfailure=1
+                chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} ${APTGET_DEFAULT_OPTS} update
 	fi
 
+        # After the PPA has been set up, download everything else.
+        aptget_run_aptget -d install ${APTGET_REMAINING_FAKETOOLS_PACKAGES} \
+                        ${APTGET_EXTRA_PACKAGES_SERVICES_DISABLED} \
+                        ${APTGET_EXTRA_PACKAGES} \
+                        ${APTGET_EXTRA_SOURCE_PACKAGES} \
+                        ${APTGET_EXTRA_PACKAGES_LAST}
+
+        # Packages affected by faketools are installed
+        # individually so that faketools are used at the right
+        # times
+        x="${APTGET_REMAINING_FAKETOOLS_PACKAGES}"
+        for i in $x; do
+                aptget_run_aptget install $i
+        done
+
 	if [ "${APTGET_SKIP_UPGRADE}" = "0" ]; then
-		test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qyf install || aptgetfailure=1
-		test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy upgrade || aptgetfailure=1
+		aptget_run_aptget -f install
+		aptget_run_aptget upgrade
 	fi
 
 	if [ "${APTGET_SKIP_FULLUPGRADE}" = "0" ]; then
-		test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qyf install || aptgetfailure=1
-		test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy full-upgrade || aptgetfailure=1
+                aptget_run_aptget -f install
+		aptget_run_aptget full-upgrade
 	fi
 
 	if [ -n "${APTGET_EXTRA_PACKAGES_SERVICES_DISABLED}" ]; then
 		# workaround - deny (re)starting of services, for selected packages, since
 		# they will make the installation fail
-		echo  >"${APTGET_CHROOT_DIR}/usr/sbin/policy-rc.d" "#!/bin/sh"
-		echo >>"${APTGET_CHROOT_DIR}/usr/sbin/policy-rc.d" "exit 101"
-		chmod a+x "${APTGET_CHROOT_DIR}/usr/sbin/policy-rc.d"
+                echo  >"${APTGET_CHROOT_DIR}/__usrsbinpolicy-rc.d__" "#!/bin/sh"
+                echo >>"${APTGET_CHROOT_DIR}/__usrsbinpolicy-rc.d__" "exit 101"
+                chmod a+x "${APTGET_CHROOT_DIR}/__usrsbinpolicy-rc.d__"
+                aptget_always_install_faketool "/usr/sbin/policy-rc.d" "/__usrsbinpolicy-rc.d__"
 
-		test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -q -y install ${APTGET_EXTRA_PACKAGES_SERVICES_DISABLED} || aptgetfailure=1
+		aptget_run_aptget install ${APTGET_EXTRA_PACKAGES_SERVICES_DISABLED}
 
 		# remove the workaround
-		rm -rf "${APTGET_CHROOT_DIR}/usr/sbin/policy-rc.d"
+                aptget_delete_faketool "/usr/sbin/policy-rc.d" "/__usrsbinpolicy-rc.d__"
 	fi
 
 	if [ -n "${APTGET_EXTRA_PACKAGES}" ]; then
-		test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy install ${APTGET_EXTRA_PACKAGES} || aptgetfailure=1
+                aptget_run_aptget install ${APTGET_EXTRA_PACKAGES}
 	fi
 
 	if [ -n "${APTGET_EXTRA_SOURCE_PACKAGES}" ]; then
 		# We need this to get source package handling properly
 		# configured for a subsequent apt-get source
-		test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy install dpkg-dev || aptgetfailure=1
+		aptget_run_aptget install dpkg-dev
 
 		# For lack of a better idea, we install source packages
 		# into the root user's home. if we could guarantee that
@@ -420,7 +736,7 @@ END_PPA
 		# the chroot directory problem.
 		echo  >"${APTGET_CHROOT_DIR}/aptgetsource.sh" "#!/bin/sh"
 		echo >>"${APTGET_CHROOT_DIR}/aptgetsource.sh" "cd \$1"
-		echo >>"${APTGET_CHROOT_DIR}/aptgetsource.sh" "${APTGET_EXECUTABLE} -qy source \$2"
+		echo >>"${APTGET_CHROOT_DIR}/aptgetsource.sh" "${APTGET_EXECUTABLE} ${APTGET_DEFAULT_OPTS} source \$2"
 		x="${APTGET_EXTRA_SOURCE_PACKAGES}"
 		for i in $x; do
 			test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" /bin/bash /aptgetsource.sh "/root" "${i}" || aptgetfailure=1
@@ -442,8 +758,6 @@ END_PPA
 	# The list of installed packages goes into the log
 	echo "Installed packages:"
 	chroot "${APTGET_CHROOT_DIR}" /usr/bin/dpkg -l | grep '^ii' | awk '{print $2}'
-
-	set +x
 }
 
 # Must have to preset all variables properly. It also means that
@@ -461,13 +775,11 @@ fakeroot do_aptget_user_update() {
 
 fakeroot aptget_update_end() {
 
-	set -x
-
 	aptget_update_presetvars;
 
 	aptgetfailure=0
 	if [ -n "${APTGET_EXTRA_PACKAGES_LAST}" ]; then
-		test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy install ${APTGET_EXTRA_PACKAGES_LAST} || aptgetfailure=1
+		aptget_run_aptget install ${APTGET_EXTRA_PACKAGES_LAST}
 	fi
 
 	# Once we have done the installation, save off the package
@@ -475,35 +787,25 @@ fakeroot aptget_update_end() {
 	aptget_save_cache_into_sstate
 
 	if [ "${APTGET_SKIP_CACHECLEAN}" = "0" ]; then
-		test $aptgetfailure -ne 0 || chroot "${APTGET_CHROOT_DIR}" ${APTGET_EXECUTABLE} -qy clean
+		aptget_run_aptget clean
 	fi
 
-	# Delete any temp proxy lines we may have added in the target rootfs
-	if [ -f "${APTGET_CHROOT_DIR}/etc/apt/apt.conf" ]; then
-		sed -i '/^Acquire::.*; \/\* Yocto \*\/\s*$/d' "${APTGET_CHROOT_DIR}/etc/apt/apt.conf"
-	fi
+        # Remove any proxy instrumentation
+        xf="/__etc_apt_apt.conf.d_01yoctoinstallproxies__"
+        aptget_delete_faketool "/etc/apt/apt.conf.d/01yoctoinstallproxies" $xf
+
+        # Remove our temporary helper again
+        aptget_delete_fakeproc
 
 	# Now that we are done in qemu land, we reinstate the original
 	# networking config of our target rootfs.
-	# We really should do this only if the targets have not been
-	# modified during installation. Hmm. Remove vs. Merge? FIX?
-	if [ -e "$etc_hosts_renamed" ]; then
-		mv -f "$etc_hosts_renamed" "${APTGET_CHROOT_DIR}/etc/hosts" 
-	fi
-	if [ -e "$etc_resolv_conf_renamed" ]; then
-		if [ ! -L "${APTGET_CHROOT_DIR}/etc/resolv.conf" ]; then
-			mv -f "$etc_resolv_conf_renamed" "${APTGET_CHROOT_DIR}/etc/resolv.conf"
-		else
-			rm -f "$etc_resolv_conf_renamed"
-		fi
-	fi
+        aptget_delete_faketool "/etc/hosts" "/__etchosts__"
+        aptget_delete_faketool "/etc/resolv.conf" "/__etcresolvconf__"
 
 	if [ $aptgetfailure -ne 0 ]; then
 		bberror "${APTGET_EXECUTABLE} failed to execute as expected!"
 		return $aptgetfailure
 	fi
-
-	set +x
 }
 
 python do_aptget_update() {
