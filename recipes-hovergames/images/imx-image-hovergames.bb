@@ -1,29 +1,34 @@
-SUMMARY = "TBD"
-DESCRIPTION = "TBD"
+require recipes-core/images/ros-image-core.bb
+
+SUMMARY = "Hovergames image"
+DESCRIPTION = "An image for Hovergames, including core ROS plus MAVROS, \
+OpenCV, and gstreamer, plus build tools and weston desktop"
 
 IMAGE_FEATURES += " \
-    splash \
-    package-management \
-    ssh-server-dropbear \
     dbg-pkgs \
     debug-tweaks \
     dev-pkgs \
+    package-management \
+    splash \
+    ssh-server-dropbear \
     tools-sdk \
     tools-profile \
 "
 
-LICENSE = "MIT"
-
-inherit core-image distro_features_check
+inherit distro_features_check
 
 REQUIRED_DISTRO_FEATURES = "wayland"
 
-CORE_IMAGE_BASE_INSTALL += " \
+IMAGE_INSTALL_append = " \
+    mavros \
+    mavros-msgs \
     opencv \
+    opencv-apps \
+    opencv-samples \
     packagegroup-fsl-gstreamer1.0 \
     packagegroup-fsl-gstreamer1.0-full \
+    python-opencv \
     weston \
     weston-init \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'weston-xwayland matchbox-terminal', '', d)} \
 "
-CORE_IMAGE_BASE_INSTALL += \
-    "${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'weston-xwayland matchbox-terminal', '', d)}"

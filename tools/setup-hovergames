@@ -1,0 +1,28 @@
+source sources/meta-imx/tools/imx-setup-release.sh $@
+
+if [ -f conf/local.conf ]; then
+    echo ""                                                                       >> conf/local.conf
+    echo "ROS_DISTRO = \"melodic\""                                               >> conf/local.conf
+    echo ""                                                                       >> conf/local.conf
+    echo "# ROS adds a blacklist rule for faad2 that cannot be undone"            >> conf/local.conf
+    echo "# with LICENSE_FLAGS_WHITELIST. Clear the rule here."                   >> conf/local.conf
+    echo "PNBLACKLIST[gstreamer1.0-plugins-bad] = \"\""                           >> conf/local.conf
+    echo ""                                                                       >> conf/local.conf
+    echo "# Save lots of disk space"                                              >> conf/local.conf
+    echo "INHERIT += \"rm_work\""                                                 >> conf/local.conf
+
+    echo "BBLAYERS += \"\${BSPDIR}/sources/meta-ros/meta-ros-common\""            >> conf/bblayers.conf
+    echo "BBLAYERS += \"\${BSPDIR}/sources/meta-ros/meta-ros-backports-dunfell\"" >> conf/bblayers.conf
+    echo "BBLAYERS += \"\${BSPDIR}/sources/meta-ros/meta-ros1\""                  >> conf/bblayers.conf
+    echo "BBLAYERS += \"\${BSPDIR}/sources/meta-ros/meta-ros1-melodic\""          >> conf/bblayers.conf
+    echo "BBLAYERS += \"\${BSPDIR}/sources/meta-nxp-hovergames\""                 >> conf/bblayers.conf
+
+    echo ""
+    echo "Hovergames setup complete!"
+    echo ""
+    echo "You can now build one of the following Hovergames images:"
+    echo ""
+    echo "$ bitbake imx-image-hovergames"
+    echo "$ bitbake imx-image-hovergames-minimal"
+    echo ""
+fi
