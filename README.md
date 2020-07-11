@@ -19,8 +19,16 @@ Download the Yocto Project BSP
 ```
 $ mkdir hovergames
 $ cd hovergames
-$ repo init -u ssh://bitbucket.sw.nxp.com/imx/imx-manifest -b linux-zeus-internal -m int-5.4.24-2.1.0_hovergames-standard.xml
+$ repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.24-2.1.0.xml
 $ repo sync
+```
+
+Download meta-ros and meta-nxp-hovergames
+-----------------------------------------
+
+```
+$ git clone https://github.com/ros/meta-ros.git sources/meta-ros
+$ git clone https://github.com/NXPmicro/meta-nxp-hovergames.git sources/meta-nxp-hovergames
 ```
 
 Create a _new_ build folder
