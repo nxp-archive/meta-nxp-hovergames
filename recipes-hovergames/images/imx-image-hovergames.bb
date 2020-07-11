@@ -10,7 +10,7 @@ IMAGE_FEATURES += " \
     dev-pkgs \
     package-management \
     splash \
-    ssh-server-dropbear \
+    ssh-server-openssh \
     tools-sdk \
     tools-profile \
 "
@@ -20,6 +20,10 @@ inherit distro_features_check
 REQUIRED_DISTRO_FEATURES = "wayland"
 
 IMAGE_INSTALL_append = " \
+    cmake \
+    connman-tools \
+    connman-tests \
+    connman-client \
     mavros \
     mavros-msgs \
     opencv \
