@@ -18,9 +18,9 @@ if [ -f conf/local.conf ]; then
     echo "BBLAYERS += \"\${BSPDIR}/sources/meta-nxp-hovergames\""                 >> conf/bblayers.conf
 
     echo ""
-    echo "Hovergames setup complete!"
+    echo "HoverGames setup complete!"
     echo ""
-    echo "You can now build one of the following Hovergames images:"
+    echo "You can now build one of the following HoverGames images:"
     echo ""
     echo "$ bitbake imx-image-hovergames"
     echo "$ bitbake imx-image-hovergames-minimal"

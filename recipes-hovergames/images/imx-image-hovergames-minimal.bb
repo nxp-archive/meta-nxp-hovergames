@@ -1,8 +1,8 @@
 require imx-image-hovergames.bb
 
-SUMMARY = "Hovergames minimal image"
-DESCRIPTION = "A minimal image for Hovergames. Removes build tools and \
-weston desktop from the standard Hovergames image."
+SUMMARY = "HoverGames minimal image"
+DESCRIPTION = "A minimal image for HoverGames. Removes build tools and \
+weston desktop from the standard HoverGames image."
 
 IMAGE_FEATURES_remove = " \
     dbg-pkgs \

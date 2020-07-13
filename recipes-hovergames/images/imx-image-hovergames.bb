@@ -1,7 +1,7 @@
 require recipes-core/images/ros-image-core.bb
 
-SUMMARY = "Hovergames image"
-DESCRIPTION = "An image for Hovergames, including core ROS plus MAVROS, \
+SUMMARY = "HoverGames image"
+DESCRIPTION = "An image for HoverGames, including core ROS plus MAVROS, \
 OpenCV, and gstreamer, plus build tools and weston desktop"
 
 IMAGE_FEATURES += " \
