@@ -1,3 +1,27 @@
+Desktop-mix-poky branch
+-----------------------
+
+This branch is modified so that Yocto recipes (gstreamer, weston, vivante drivers) can be installed next to the Ubuntu rootfs.
+
+Note there's a manual workaround need to get the graphics subsystem installed, where fontcache post-install step fails. A hotfix is shown below
+```
+diff --git a/meta/recipes-graphics/ttf-fonts/liberation-fonts_2.00.1.bb b/meta/recipes-graphics/ttf-fonts/liberation-fonts_2.00.1.bb
+index f5df9efa3b..82e6488067 100644
+--- a/meta/recipes-graphics/ttf-fonts/liberation-fonts_2.00.1.bb
++++ b/meta/recipes-graphics/ttf-fonts/liberation-fonts_2.00.1.bb
+@@ -10,7 +10,7 @@ LICENSE = "OFL-1.1"
+ LIC_FILES_CHKSUM = "file://LICENSE;md5=f96db970a9a46c5369142b99f530366b"
+ PE = "1"
+
+-inherit allarch fontcache
++inherit allarch
+
+ FONT_PACKAGES = "${PN}"
+```
+This disables the fontcache in the liberation-fonts recipe thus enabling a succesfull build
+
+
+
 i.MX Linux Yocto Project BSP for HoverGames
 ===========================================
 

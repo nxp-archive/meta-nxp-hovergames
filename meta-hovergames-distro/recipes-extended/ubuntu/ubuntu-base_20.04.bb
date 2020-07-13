@@ -24,6 +24,7 @@ FILES_${PN} += "/sbin"
 # The downside of not having the symlink destination content is that we
 # are missing a few basic files that are must have for dependencies.
 RPROVIDES_${PN}_ubuntu += " \
+    /bin/sh \
     /bin/bash \
     /bin/dash \
 "
@@ -89,3 +90,20 @@ systemd-sysv systemd-timesyncd sysvinit-utils tar tcl tcl8.6 tzdata \
 ubuntu-keyring ucf udev udhcpc unattended-upgrades util-linux whiptail \
 xdg-user-dirs xz-utils zlib1g \
 "
+
+# Extra packages that Ubuntu will replace and thus enables the use of 
+# Yocto packages such as gstreamer to be used in Ubuntu without package conflitcs
+
+RCONFLICTS_${PN} += " glib-2.0 libglib-2.0-0 python3-core python3-dev \
+                      python3-distutils python3-pickle python3-xml \
+                      update-alternatives-opkg pam-plugin-unix \
+                      libpam-runtime shadow-base shadow dbus polkit \
+                      systemd systemd-dev iso-codes-dev \ 
+                      shared-mime-info-dev "
+RREPLACES_${PN} += " glib-2.0 libglib-2.0-0 python3-core python3-dev \
+                     python3-distutils python3-pickle python3-xml \
+                     update-alternatives-opkg pam-plugin-unix \
+                     libpam-runtime shadow-base shadow dbus polkit \
+                     systemd systemd-dev iso-codes-dev \
+                     shared-mime-info-dev "
+RPROVIDES_${PN}_ubuntu += " libglib-2.0 "

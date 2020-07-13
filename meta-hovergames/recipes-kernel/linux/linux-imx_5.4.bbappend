@@ -1,6 +1,7 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
 SRC_URI += " \
+    file://containers.cfg \
     file://0001-Add-NavQ-device-trees.patch \
     file://0001-ARM64-dts-imx8mmnavq-Change-SD2_CD-pin-for-SDHC2.patch \
     file://0001-Add-OV5645-driver.patch \
@@ -9,3 +10,7 @@ SRC_URI += " \
     file://0001-OV5645-Disable-regulators-if-camera-is-not-found.patch \
     file://0001-dts-bug-fix.patch \
 "
+
+do_configure_append () {
+    ${S}/scripts/kconfig/merge_config.sh -m -O ${WORKDIR}/build ${WORKDIR}/build/.config ${WORKDIR}/*.cfg
+}
