@@ -27,7 +27,7 @@ Download meta-ros and meta-nxp-hovergames
 -----------------------------------------
 
 ```
-$ git clone https://github.com/ros/meta-ros.git sources/meta-ros
+$ git clone -b zeus https://github.com/ros/meta-ros.git sources/meta-ros
 $ git clone https://github.com/NXPmicro/meta-nxp-hovergames.git sources/meta-nxp-hovergames
 ```
 
@@ -37,7 +37,7 @@ Create a _new_ build folder
 If you want to create a _new_ build folder:
 
 ```
-$ DISTRO=fsl-imx-xwayland MACHINE=imx8mmnavq source setup-hovergames -b build
+$ DISTRO=fsl-imx-xwayland MACHINE=imx8mmnavq source sources/meta-nxp-hovergames/tools/setup-hovergames -b build
 ```
 
 Use an _existing_ build folder
