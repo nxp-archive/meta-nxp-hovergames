@@ -20,10 +20,12 @@ inherit distro_features_check
 REQUIRED_DISTRO_FEATURES = "wayland"
 
 IMAGE_INSTALL_append = " \
+    ca-certificates \
     cmake \
     connman-tools \
     connman-tests \
     connman-client \
+    gnupg \
     mavros \
     mavros-msgs \
     opencv \
