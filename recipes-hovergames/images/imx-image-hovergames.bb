@@ -38,3 +38,10 @@ IMAGE_INSTALL_append = " \
     weston-init \
     ${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'weston-xwayland matchbox-terminal', '', d)} \
 "
+
+# meta-freescale code to include QCA 9377 support is not working
+IMAGE_INSTALL_append = " \
+    firmware-qca9377 \
+    kernel-module-qca9377 \
+    qca-tools \
+"
