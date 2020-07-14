@@ -1,0 +1,142 @@
+From 6af551eadce552f7f2428229759d5fe0a9a1b174 Mon Sep 17 00:00:00 2001
+From: Han Raaijmakers <han.raaijmakers@nxp.com>
+Date: Tue, 14 Jul 2020 16:03:43 +0200
+Subject: [PATCH] dts bug fix
+
+---
+ arch/arm64/boot/dts/freescale/imx8mm-navq.dts | 54 ++++++++++---------
+ 1 file changed, 29 insertions(+), 25 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+index 020a8fee16e4..a99d60ae0dee 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+@@ -73,7 +73,7 @@
+ 		off-on-delay-us = <20000>;
+ 		enable-active-high;
+ 	};
+-
++/*
+ 	reg_audio_board: regulator-audio-board {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "EXT_PWREN";
+@@ -83,7 +83,7 @@
+ 		startup-delay-us = <300000>;
+ 		gpio = <&pca6416 1 GPIO_ACTIVE_HIGH>;
+ 	};
+-
++*/
+ 
+ };
+ 
+@@ -122,6 +122,7 @@
+ 	};
+ };
+ 
++/*
+ &pcie0{
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_pcie0>;
+@@ -136,7 +137,7 @@
+ 	reserved-region = <&rpmsg_reserved>;
+ 	status = "okay";
+ };
+-
++*/
+ 
+ 
+ &snvs_pwrkey {
+@@ -230,6 +231,7 @@
+ 	status = "okay";
+ };
+ 
++/*
+ &flexspi {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_flexspi0>;
+@@ -245,6 +247,7 @@
+ 		spi-rx-bus-width = <4>;
+ 	};
+ };
++*/
+ 
+ &i2c1 {
+ 	clock-frequency = <400000>;
+@@ -366,24 +369,6 @@
+ 	pinctrl-0 = <&pinctrl_i2c2>;
+ 	status = "okay";
+ 
+-	adv_bridge: adv7535@3d {
+-		compatible = "adi,adv7533";
+-		reg = <0x3d>;
+-		adi,addr-cec = <0x3b>;
+-		adi,dsi-lanes = <4>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_i2c2_synaptics_dsx_io>;
+-		interrupt-parent = <&gpio1>;
+-		interrupts = <9 IRQ_TYPE_LEVEL_LOW>;
+-		status = "okay";
+-
+-		port {
+-			adv7535_from_dsim: endpoint {
+-				remote-endpoint = <&dsim_to_adv7535>;
+-			};
+-		};
+-	};
+-
+ };
+ 
+ &i2c3 {
+@@ -391,19 +376,19 @@
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_i2c3>;
+ 	status = "okay";
+-
++/*
+ 	pca6416: gpio@20 {
+ 		compatible = "ti,tca6416";
+ 		reg = <0x20>;
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+ 	};
+-
+-	ptn5110: tcpc@50 {
++*/
++	ptn5110: tcpc@52 {
+ 		compatible = "nxp,ptn5110";
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&pinctrl_typec1>;
+-		reg = <0x50>;
++		reg = <0x52>;
+ 		interrupt-parent = <&gpio2>;
+ 		interrupts = <11 8>;
+ 		status = "okay";
+@@ -436,6 +421,25 @@
+ 	pinctrl-0 = <&pinctrl_i2c4>;
+ 	status = "okay";
+ 
++
++	adv_bridge: adv7535@3d {
++		compatible = "adi,adv7533";
++		reg = <0x3d>;
++		adi,addr-cec = <0x3b>;
++		adi,dsi-lanes = <4>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_i2c2_synaptics_dsx_io>;
++		interrupt-parent = <&gpio1>;
++		interrupts = <9 IRQ_TYPE_LEVEL_LOW>;
++		status = "okay";
++
++		port {
++			adv7535_from_dsim: endpoint {
++				remote-endpoint = <&dsim_to_adv7535>;
++			};
++		};
++	};
++
+ 	ov5645_mipi: ov5645_mipi@3c {
+ 			compatible = "ovti,ov5645_mipi";
+ 			reg = <0x3c>;
+-- 
+2.17.1
+
