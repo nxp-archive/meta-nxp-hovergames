@@ -1,0 +1,18 @@
+uuu_version 1.0.1
+
+# for IMX8MQ, IMX8MM
+SDP: boot -f imx-boot-MACHINE-sd.bin-flash_navq
+SDPV: delay 1000
+SDPV: write -f imx-boot-MACHINE-sd.bin-flash_navq -skipspl
+SDPV: jump
+
+# Configure U-Boot variables
+FB: ucmd setenv fastboot_dev mmc
+
+# Flash the: 1 == SD card, 2 == eMMC chip
+FB: ucmd mmc dev MMCDEV
+FB: ucmd setenv mmcdev MMCDEV
+
+FB: flash -raw2sparse all IMAGE-MACHINE.wic.bz2/*
+
+FB: Done
