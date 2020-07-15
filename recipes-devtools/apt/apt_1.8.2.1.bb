@@ -27,7 +27,7 @@ inherit cmake perlnative bash-completion upstream-version-is-even
 
 BBCLASSEXTEND = "native"
 
-DEPENDS += "virtual/libiconv virtual/libintl db gnutls lz4 zlib bzip2 xz"
+DEPENDS += "virtual/libiconv virtual/libintl db gnutls lz4 zlib bzip2 xz gtest"
 
 EXTRA_OECMAKE_append = " -DCURRENT_VENDOR=debian -DWITH_DOC=False -DUSE_NLS=False -DDPKG_DATADIR=${datadir}/dpkg -DTRIEHASH_EXECUTABLE=${WORKDIR}/triehash"
 
