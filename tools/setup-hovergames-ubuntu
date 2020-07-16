@@ -17,7 +17,7 @@ if [ -f conf/local.conf ]; then
     echo ""
     echo "HoverGames setup complete!"
     echo ""
-    echo "** IMPORTANT ** Use of this `demo` branch is for demo and evaluation purposes only. Use the `master` branch for production use"
+    echo "** IMPORTANT ** Use of this demo branch is for demo and evaluation purposes only. Use the master branch for production use"
     echo ""
     echo "You can now build the HoverGames Ubuntu image:"
     echo ""
