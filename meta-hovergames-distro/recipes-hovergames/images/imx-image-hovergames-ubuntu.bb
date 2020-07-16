@@ -36,6 +36,13 @@ IMAGE_INSTALL += "\
 	kernel-modules \
 "
 
+# meta-freescale code to include QCA 9377 support is not working
+IMAGE_INSTALL += " \
+    firmware-qca9377 \
+    kernel-module-qca9377 \
+    qca-tools \
+"
+
 # We want to have an itb to boot from in the /boot directory to be flexible
 # about U-Boot behavior
 #IMAGE_INSTALL += "\
