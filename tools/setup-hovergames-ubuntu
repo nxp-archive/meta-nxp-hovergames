@@ -1,0 +1,23 @@
+source sources/meta-imx/tools/imx-setup-release.sh $@
+
+if [ -f conf/local.conf ]; then
+    echo ""                                                      >> conf/local.conf
+    echo "# Switch to rpm packaging to avoid rootfs build break" >> conf/local.conf
+    echo "PACKAGE_CLASSES = \"package_rpm\""                     >> conf/local.conf
+    echo ""                                                      >> conf/local.conf
+    echo "# Save lots of disk space"                             >> conf/local.conf
+    echo "INHERIT += \"rm_work\""                                >> conf/local.conf
+
+    echo "BBLAYERS += \"\${BSPDIR}/sources/meta-nxp-hovergames/meta-hovergames\"" >> conf/bblayers.conf
+    echo "BBLAYERS += \"\${BSPDIR}/sources/meta-nxp-hovergames/meta-hovergames-distro\"" >> conf/bblayers.conf
+
+    echo ""
+    echo "HoverGames setup complete!"
+    echo ""
+    echo "** IMPORTANT ** Use of this `demo` branch is for demo and evaluation purposes only. Use the `master` branch for production use"
+    echo ""
+    echo "You can now build the HoverGames Ubuntu image:"
+    echo ""
+    echo "$ bitbake imx-image-hovergames-ubuntu"
+    echo ""
+fi
