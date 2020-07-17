@@ -36,6 +36,11 @@ IMAGE_INSTALL += "\
 	kernel-modules \
 "
 
+# SDMA firmware hotfix
+IMAGE_INSTALL += "\
+	firmware-imx-sdma \
+"
+
 # meta-freescale code to include QCA 9377 support is not working
 IMAGE_INSTALL += " \
     firmware-qca9377 \

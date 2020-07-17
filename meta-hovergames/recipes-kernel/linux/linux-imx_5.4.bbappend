@@ -9,6 +9,7 @@ SRC_URI += " \
     file://0001-OV5645-Disable-auto-focus-on-initialization.patch \
     file://0001-OV5645-Disable-regulators-if-camera-is-not-found.patch \
     file://0001-dts-bug-fix.patch \
+    file://0003-imx-sdma-firmware-load-hotfix.patch \
 "
 
 do_configure_append () {
