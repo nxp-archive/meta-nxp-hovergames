@@ -300,6 +300,8 @@ APTGET_EXTRA_PACKAGES += "\
 	apt git vim \
 	ethtool wget ftp iputils-ping lrzsz \
 	net-tools \
+	connman \
+	openssh-server \
 "
 APTGET_EXTRA_SOURCE_PACKAGES += "\
 	iproute2 \
