@@ -29,23 +29,11 @@ IMAGE_INSTALL += "\
 	ubuntu-base-doc \
 "
 
-# Without the kernel and modules, we can't really use the Linux
+# Without the kernel, modules, and firmware we can't really use the Linux
 IMAGE_INSTALL += "\
 	kernel-devicetree \
 	kernel-image \
-	kernel-modules \
-"
-
-# SDMA firmware hotfix
-IMAGE_INSTALL += "\
-	firmware-imx-sdma \
-"
-
-# meta-freescale code to include QCA 9377 support is not working
-IMAGE_INSTALL += " \
-    firmware-qca9377 \
-    kernel-module-qca9377 \
-    qca-tools \
+	${MACHINE_EXTRA_RRECOMMENDS} \
 "
 
 # We want to have an itb to boot from in the /boot directory to be flexible
