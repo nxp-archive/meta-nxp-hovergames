@@ -26,6 +26,7 @@ IMAGE_INSTALL_append = " \
     connman-tests \
     connman-client \
     gnupg \
+    mavlink-router \
     mavros \
     mavros-msgs \
     opencv \
