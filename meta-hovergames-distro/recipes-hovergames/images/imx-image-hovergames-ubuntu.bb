@@ -309,6 +309,7 @@ APTGET_EXTRA_PACKAGES += "\
 	net-tools \
 	connman \
 	openssh-server \
+	python3-future libtool autoconf pkg-config \
 "
 APTGET_EXTRA_SOURCE_PACKAGES += "\
 	iproute2 \
