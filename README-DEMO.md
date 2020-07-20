@@ -1,8 +1,10 @@
+** IMPORTANT ** Use of this `demo` branch is for demo and evaluation purposes only. Use the `master` branch for production use.
+
 i.MX Linux Yocto Project BSP for HoverGames
 ===========================================
 
 This README contains instructions for setting up a Yocto build
-for the HoverGames image with a standard i.MX rootfs.
+for the HoverGames demo image.
 
 Install the `repo` utility
 --------------------------
@@ -22,7 +24,7 @@ Download the Yocto Project BSP
 ```
 $ mkdir hovergames
 $ cd hovergames
-$ repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.24-2.1.0_demo_hovergames.xml
+$ repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.24-2.1.0_hovergames_demo.xml
 $ repo sync
 ```
 
@@ -32,7 +34,7 @@ Create a _new_ build folder
 If you want to create a _new_ build folder:
 
 ```
-$ DISTRO=fsl-imx-xwayland MACHINE=imx8mmnavq source setup-hovergames -b build-standard
+$ DISTRO=imx-desktop-xwayland MACHINE=imx8mmnavqubuntu source setup-hovergames-demo -b build-demo
 ```
 
 Use an _existing_ build folder
@@ -42,16 +44,12 @@ If you want to build in an _existing_ build folder:
 
 ```
 $ cd hovergames
-$ source setup-environment build-standard
+$ source setup-environment build-demo
 ```
 
 Build the image
 ---------------
 
-There is a regular image and a minimal image. The minimal image excludes
-build-on-target support and the weston desktop.
-
 ```
-$ bitbake imx-image-hovergames
-$ bitbake imx-image-hovergames-minimal
+$ bitbake imx-image-hovergames-demo
 ```
