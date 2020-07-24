@@ -8,4 +8,6 @@ SRC_URI += " \
     file://0001-OV5645-Disable-auto-focus-on-initialization.patch \
     file://0001-OV5645-Disable-regulators-if-camera-is-not-found.patch \
     file://0001-dts-bug-fix.patch \
+    file://0001-Add-support-for-clkout1-2-clocks-into-the-imx8mm-clo.patch \
+    file://0002-Fix-OV5645-clock-configuration.patch \
 "
