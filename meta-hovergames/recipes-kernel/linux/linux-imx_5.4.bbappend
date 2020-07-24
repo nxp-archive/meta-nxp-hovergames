@@ -14,6 +14,7 @@ SRC_URI += " \
     file://0010-arm64-imx8mm-navq-fix-LDO1-and-LDO2-voltages.patch \
     file://0011-Add-support-for-clkout1-2-clocks-into-the-imx8mm-clo.patch \
     file://0012-Fix-OV5645-clock-configuration.patch \
+    file://0013-Mask-PTN5110-FAULT_TATUS_MASK-register-to-prevent-sp.patch \
 "
 
 do_configure_append () {
