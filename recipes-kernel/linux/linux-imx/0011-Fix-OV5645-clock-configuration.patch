@@ -1,0 +1,29 @@
+From 0c4bf39376ca38f50595087757f1d6638275f45e Mon Sep 17 00:00:00 2001
+From: Alexander Yurtsev <alex@emcraft.com>
+Date: Thu, 23 Jul 2020 14:37:41 -0700
+Subject: [PATCH 2/6] Fix OV5645 clock configuration
+
+---
+ arch/arm64/boot/dts/freescale/imx8mm-navq.dts | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+index a99d60ae0dee..3c2ef279b173 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+@@ -446,9 +446,10 @@
+ 			status = "okay";
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_csi1>;
+-			clocks = <&clk IMX8MM_CLK_CLKO1>;
++			clocks = <&clk IMX8MM_CLK_CLKOUT1_CG>;
+ 			clock-names = "csi_mclk";
+-			assigned-clocks = <&clk IMX8MM_CLK_CLKO1>;
++			assigned-clocks = <&clk IMX8MM_CLK_CLKOUT1_SRC>,
++				<&clk IMX8MM_CLK_CLKOUT1_DIV>;
+ 			assigned-clock-parents = <&clk IMX8MM_CLK_24M>;
+ 			assigned-clock-rates = <24000000>;
+ 			csi_id = <0>;
+-- 
+2.17.1
+
