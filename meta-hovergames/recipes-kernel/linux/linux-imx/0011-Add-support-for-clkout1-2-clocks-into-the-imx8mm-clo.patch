@@ -1,0 +1,63 @@
+From d60ba2de089d301e0084783b83d8834884951ee0 Mon Sep 17 00:00:00 2001
+From: Alexander Yurtsev <alex@emcraft.com>
+Date: Fri, 22 May 2020 18:23:50 +0300
+Subject: [PATCH 1/6] Add support for clkout1/2 clocks into the imx8mm clock
+ driver
+
+---
+ drivers/clk/imx/clk-imx8mm.c             | 12 ++++++++++++
+ include/dt-bindings/clock/imx8mm-clock.h |  9 ++++++++-
+ 2 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/clk/imx/clk-imx8mm.c b/drivers/clk/imx/clk-imx8mm.c
+index 7dee2f76cc37..6121fd28553b 100644
+--- a/drivers/clk/imx/clk-imx8mm.c
++++ b/drivers/clk/imx/clk-imx8mm.c
+@@ -360,6 +360,10 @@ static const char *imx8mm_dram_core_sels[] = {"dram_pll_out", "dram_alt_root", }
+ static const char *imx8mm_clko1_sels[] = {"osc_24m", "sys_pll1_800m", "osc_27m", "sys_pll1_200m", "audio_pll2_out",
+ 					 "vpu_pll", "sys_pll1_80m", };
+ 
++static const char *imx8mm_clkout_sels[] = { "audio_pll1", "audio_pll2", "video_pll1", "reserved", "misc_mnit_clk",
++					    "gpu_pll", "vpu_pll", "arm_pll", "sys_pll1", "sys_pll2", "sys_pll3",
++					    "clk_in1", "clk_in2", "osc_24m", "reserved", "osc_32k" };
++
+ static struct clk *clks[IMX8MM_CLK_END];
+ static struct clk_onecell_data clk_data;
+ 
+@@ -478,6 +482,14 @@ static int imx8mm_clocks_probe(struct platform_device *pdev)
+ 	clks[IMX8MM_SYS_PLL2_500M] = imx_clk_fixed_factor("sys_pll2_500m", "sys_pll2_out", 1, 2);
+ 	clks[IMX8MM_SYS_PLL2_1000M] = imx_clk_fixed_factor("sys_pll2_1000m", "sys_pll2_out", 1, 1);
+ 
++	/* Test clocks */
++	clks[IMX8MM_CLK_CLKOUT1_SRC] = imx_clk_mux2("clkout1_src", base + 0x128, 4, 4, imx8mm_clkout_sels, ARRAY_SIZE(imx8mm_clkout_sels));
++	clks[IMX8MM_CLK_CLKOUT1_DIV] = imx_clk_divider2("clkout1_div", "clkout1_src", base + 0x128, 0, 4);
++	clks[IMX8MM_CLK_CLKOUT1_CG] = imx_clk_gate("clkout1", "clkout1_div", base + 0x128, 8);
++	clks[IMX8MM_CLK_CLKOUT2_SRC] = imx_clk_mux2("clkout2_src", base + 0x128, 20, 4, imx8mm_clkout_sels, ARRAY_SIZE(imx8mm_clkout_sels));
++	clks[IMX8MM_CLK_CLKOUT2_DIV] = imx_clk_divider2("clkout2_div", "clkout2_src", base + 0x128, 16, 4);
++	clks[IMX8MM_CLK_CLKOUT2_CG] = imx_clk_gate4("clkout2", "clkout2_div", base + 0x128, 24);
++
+ 	np = dev->of_node;
+ 	base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (WARN_ON(IS_ERR(base)))
+diff --git a/include/dt-bindings/clock/imx8mm-clock.h b/include/dt-bindings/clock/imx8mm-clock.h
+index 81a2436ef5a9..2fd08084d2eb 100644
+--- a/include/dt-bindings/clock/imx8mm-clock.h
++++ b/include/dt-bindings/clock/imx8mm-clock.h
+@@ -249,6 +249,13 @@
+ #define IMX8MM_CLK_GIC				229
+ #define IMX8MM_CLK_A53_CORE			230
+ 
+-#define IMX8MM_CLK_END				231
++#define IMX8MM_CLK_CLKOUT1_SRC			231
++#define IMX8MM_CLK_CLKOUT1_DIV			232
++#define IMX8MM_CLK_CLKOUT1_CG			233
++#define IMX8MM_CLK_CLKOUT2_SRC			234
++#define IMX8MM_CLK_CLKOUT2_DIV			235
++#define IMX8MM_CLK_CLKOUT2_CG			236
++
++#define IMX8MM_CLK_END				237
+ 
+ #endif
+-- 
+2.17.1
+
