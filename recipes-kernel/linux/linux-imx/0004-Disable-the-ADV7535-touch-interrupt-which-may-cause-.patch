@@ -1,0 +1,28 @@
+From 92bc37d417868ece3c5b2671800d7cb8c334c499 Mon Sep 17 00:00:00 2001
+From: Alexander Yurtsev <alex@emcraft.com>
+Date: Fri, 24 Jul 2020 08:07:23 -0700
+Subject: [PATCH 4/6] Disable the ADV7535 touch interrupt, which may cause
+ system freezes.
+
+---
+ arch/arm64/boot/dts/freescale/imx8mm-navq.dts | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+index c90790b8e56c..cf9db1e7f0dc 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+@@ -427,10 +427,6 @@
+ 		reg = <0x39>;
+ 		adi,addr-cec = <0xc>;
+ 		adi,dsi-lanes = <4>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_i2c2_synaptics_dsx_io>;
+-		interrupt-parent = <&gpio1>;
+-		interrupts = <9 IRQ_TYPE_LEVEL_LOW>;
+ 		status = "okay";
+ 
+ 		port {
+-- 
+2.17.1
+

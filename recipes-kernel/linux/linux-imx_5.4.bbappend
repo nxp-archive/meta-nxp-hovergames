@@ -10,4 +10,6 @@ SRC_URI += " \
     file://0001-dts-bug-fix.patch \
     file://0001-Add-support-for-clkout1-2-clocks-into-the-imx8mm-clo.patch \
     file://0002-Fix-OV5645-clock-configuration.patch \
+    file://0003-Fix-hdmi-bridge-i2c-addresses.patch \
+    file://0004-Disable-the-ADV7535-touch-interrupt-which-may-cause-.patch \
 "

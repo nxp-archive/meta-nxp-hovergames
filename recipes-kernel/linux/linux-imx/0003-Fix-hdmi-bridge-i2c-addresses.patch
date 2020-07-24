@@ -1,0 +1,30 @@
+From d8a71462d0d9fa6a2328f0b342bfb03cb59789b3 Mon Sep 17 00:00:00 2001
+From: Alexander Yurtsev <alex@emcraft.com>
+Date: Fri, 24 Jul 2020 08:08:30 -0700
+Subject: [PATCH 3/6] Fix hdmi bridge i2c addresses
+
+---
+ arch/arm64/boot/dts/freescale/imx8mm-navq.dts | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+index 3c2ef279b173..c90790b8e56c 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+@@ -422,10 +422,10 @@
+ 	status = "okay";
+ 
+ 
+-	adv_bridge: adv7535@3d {
++	adv_bridge: adv7535@39 {
+ 		compatible = "adi,adv7533";
+-		reg = <0x3d>;
+-		adi,addr-cec = <0x3b>;
++		reg = <0x39>;
++		adi,addr-cec = <0xc>;
+ 		adi,dsi-lanes = <4>;
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&pinctrl_i2c2_synaptics_dsx_io>;
+-- 
+2.17.1
+
