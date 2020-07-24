@@ -1,0 +1,27 @@
+From 5cc5e17eff568e5b5dc7954387ad38fb3816fe32 Mon Sep 17 00:00:00 2001
+From: Alexander Yurtsev <alex@emcraft.com>
+Date: Fri, 24 Jul 2020 05:21:08 -0700
+Subject: [PATCH 5/6] Fix tcpc interrupt source
+
+---
+ arch/arm64/boot/dts/freescale/imx8mm-navq.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+index cf9db1e7f0dc..64f0e25bd4d6 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+@@ -389,8 +389,8 @@
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&pinctrl_typec1>;
+ 		reg = <0x52>;
+-		interrupt-parent = <&gpio2>;
+-		interrupts = <11 8>;
++		interrupt-parent = <&gpio4>;
++		interrupts = <21 8>;
+ 		status = "okay";
+ 
+ 		port {
+-- 
+2.17.1
+

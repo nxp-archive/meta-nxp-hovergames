@@ -12,4 +12,6 @@ SRC_URI += " \
     file://0002-Fix-OV5645-clock-configuration.patch \
     file://0003-Fix-hdmi-bridge-i2c-addresses.patch \
     file://0004-Disable-the-ADV7535-touch-interrupt-which-may-cause-.patch \
+    file://0005-Fix-tcpc-interrupt-source.patch \
+    file://0006-Mask-PTN5110-FAULT_TATUS_MASK-register-to-prevent-sp.patch \
 "
