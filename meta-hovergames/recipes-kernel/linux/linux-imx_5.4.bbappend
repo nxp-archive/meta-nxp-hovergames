@@ -10,6 +10,7 @@ SRC_URI += " \
     file://0006-OV5645-Disable-regulators-if-camera-is-not-found.patch \
     file://0007-dts-bug-fix.patch \
     file://0008-imx-sdma-firmware-load-hotfix.patch \
+    file://0009-arm64-dts-imx8mm-navq-Update-dts-to-board-rev2a.patch \
 "
 
 do_configure_append () {

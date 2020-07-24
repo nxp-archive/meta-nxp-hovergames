@@ -1,0 +1,412 @@
+From 3a95d5eb674fa426faf051fb5abebe6bc74d9494 Mon Sep 17 00:00:00 2001
+From: Rogerio Silva <rogerio.silva@nxp.com>
+Date: Thu, 23 Jul 2020 19:58:27 -0300
+Subject: [PATCH 1/2] arm64: dts: imx8mm-navq: Update dts to board rev2a
+
+Signed-off-by: Rogerio Silva <rogerio.silva@nxp.com>
+---
+ arch/arm64/boot/dts/freescale/imx8mm-navq.dts | 255 +++++++++---------
+ 1 file changed, 123 insertions(+), 132 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+index a99d60ae0dee..dcfd07338e1f 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+@@ -39,6 +39,19 @@
+ 		};
+ 	};
+ 
++
++	leds_navq {
++		compatible = "gpio-leds";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_gpio_led_navq>;
++
++		status {
++			label = "navq_status";
++			gpios = <&gpio1 6 GPIO_ACTIVE_HIGH>;
++			default-state = "on";
++		};
++	};
++
+ 	modem_reset: modem-reset {
+ 		compatible = "gpio-reset";
+ 		reset-gpios = <&gpio2 6 GPIO_ACTIVE_LOW>;
+@@ -53,37 +66,46 @@
+ 		clock-frequency = <100000000>;
+ 	};
+ 
+-	reg_sd1_vmmc: sd1_regulator {
+-		compatible = "regulator-fixed";
+-		regulator-name = "WLAN_EN";
+-		regulator-min-microvolt = <3300000>;
+-		regulator-max-microvolt = <3300000>;
+-		gpio = <&gpio2 10 GPIO_ACTIVE_HIGH>;
+-		off-on-delay-us = <20000>;
+-		startup-delay-us = <100>;
+-		enable-active-high;
+-	};
++	regulators {
++		compatible = "simple-bus";
++		#address-cells = <1>;
++		#size-cells = <0>;
+ 
+-	reg_usdhc2_vmmc: regulator-usdhc2 {
+-		compatible = "regulator-fixed";
+-		pinctrl-names = "default";
+-		regulator-name = "VSD_3V3";
+-		regulator-min-microvolt = <3300000>;
+-		regulator-max-microvolt = <3300000>;
+-		off-on-delay-us = <20000>;
+-		enable-active-high;
+-	};
+-/*
+-	reg_audio_board: regulator-audio-board {
+-		compatible = "regulator-fixed";
+-		regulator-name = "EXT_PWREN";
+-		regulator-min-microvolt = <3300000>;
+-		regulator-max-microvolt = <3300000>;
+-		enable-active-high;
+-		startup-delay-us = <300000>;
+-		gpio = <&pca6416 1 GPIO_ACTIVE_HIGH>;
++
++		reg_sd1_vmmc: sd1_regulator {
++		compatible = "regulator-fixed";
++			regulator-name = "WLAN_EN";
++			regulator-min-microvolt = <3300000>;
++			regulator-max-microvolt = <3300000>;
++			gpio = <&gpio2 10 GPIO_ACTIVE_HIGH>;
++			off-on-delay-us = <20000>;
++			startup-delay-us = <100>;
++			enable-active-high;
++		};
++
++		reg_usbotg_vcc: regulator-usbotg-vcc {
++			compatible = "regulator-fixed";
++			regulator-name = "USB_OTG_VCC";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			gpio = <&gpio2 20 GPIO_ACTIVE_HIGH>;
++			off-on-delay = <20000>;
++			enable-active-high;
++		};
++
++		reg_peripheral_vcc: regulator-peripheral-vcc {
++			compatible = "regulator-fixed";
++			regulator-name = "PERIPHERAL_VCC";
++			regulator-min-microvolt = <5000000>;
++			regulator-max-microvolt = <5000000>;
++			gpio = <&gpio1 7 GPIO_ACTIVE_HIGH>;
++			off-on-delay = <20000>;
++			enable-active-high;
++			regulator-boot-on;
++			regulator-always-on;
++		};
+ 	};
+-*/
++
+ 
+ };
+ 
+@@ -122,22 +144,6 @@
+ 	};
+ };
+ 
+-/*
+-&pcie0{
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_pcie0>;
+-	disable-gpio = <&gpio1 5 GPIO_ACTIVE_LOW>;
+-	reset-gpio = <&gpio4 21 GPIO_ACTIVE_LOW>;
+-	clocks = <&clk IMX8MM_CLK_PCIE1_ROOT>,
+-		 <&clk IMX8MM_CLK_PCIE1_AUX>,
+-		 <&clk IMX8MM_CLK_PCIE1_PHY>,
+-		 <&pcie0_refclk>;
+-	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
+-	ext_osc = <0>; // 0 - internal clock; 1 - external
+-	reserved-region = <&rpmsg_reserved>;
+-	status = "okay";
+-};
+-*/
+ 
+ 
+ &snvs_pwrkey {
+@@ -175,8 +181,6 @@
+ 	srp-disable;
+ 	adp-disable;
+ 	usb-role-switch;
+-	picophy,pre-emp-curr-control = <3>;
+-	picophy,dc-vol-level-adjust = <7>;
+ 	status = "okay";
+ 
+ 	port {
+@@ -187,8 +191,11 @@
+ };
+ 
+ &usbotg2 {
+-	dr_mode = "host";
+-	status = "okay";
++	 dr_mode = "host"; // the OTG mode doesn't work out of the box
++	 vbus-supply = <&reg_usbotg_vcc>;
++	 picophy,pre-emp-curr-control = <3>;
++	 picophy,dc-vol-level-adjust = <7>;
++	 status = "okay";
+ };
+ 
+ &usdhc1 {
+@@ -231,24 +238,6 @@
+ 	status = "okay";
+ };
+ 
+-/*
+-&flexspi {
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_flexspi0>;
+-	status = "okay";
+-
+-	flash0: mt25qu256aba@0 {
+-		reg = <0>;
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		compatible = "jedec,spi-nor";
+-		spi-max-frequency = <80000000>;
+-		spi-tx-bus-width = <4>;
+-		spi-rx-bus-width = <4>;
+-	};
+-};
+-*/
+-
+ &i2c1 {
+ 	clock-frequency = <400000>;
+ 	pinctrl-names = "default";
+@@ -322,15 +311,15 @@
+ 
+ 			ldo1_reg: LDO1 {
+ 				regulator-name = "LDO1";
+-				regulator-min-microvolt = <1600000>;
+-				regulator-max-microvolt = <1900000>;
++				regulator-min-microvolt = <3000000>;
++				regulator-max-microvolt = <3300000>;
+ 				regulator-boot-on;
+ 				regulator-always-on;
+ 			};
+ 
+ 			ldo2_reg: LDO2 {
+ 				regulator-name = "LDO2";
+-				regulator-min-microvolt = <800000>;
++				regulator-min-microvolt = <900000>;
+ 				regulator-max-microvolt = <900000>;
+ 				regulator-boot-on;
+ 				regulator-always-on;
+@@ -376,21 +365,14 @@
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_i2c3>;
+ 	status = "okay";
+-/*
+-	pca6416: gpio@20 {
+-		compatible = "ti,tca6416";
+-		reg = <0x20>;
+-		gpio-controller;
+-		#gpio-cells = <2>;
+-	};
+-*/
++
+ 	ptn5110: tcpc@52 {
+ 		compatible = "nxp,ptn5110";
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&pinctrl_typec1>;
+ 		reg = <0x52>;
+-		interrupt-parent = <&gpio2>;
+-		interrupts = <11 8>;
++		interrupt-parent = <&gpio4>;
++		interrupts = <21 8>;
+ 		status = "okay";
+ 
+ 		port {
+@@ -421,16 +403,17 @@
+ 	pinctrl-0 = <&pinctrl_i2c4>;
+ 	status = "okay";
+ 
+-
+-	adv_bridge: adv7535@3d {
++	adv_bridge: adv7535@39 {
+ 		compatible = "adi,adv7533";
+-		reg = <0x3d>;
+-		adi,addr-cec = <0x3b>;
++		reg = <0x39>;
++		adi,addr-cec = <0xc>;
+ 		adi,dsi-lanes = <4>;
++#if 0
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&pinctrl_i2c2_synaptics_dsx_io>;
+ 		interrupt-parent = <&gpio1>;
+ 		interrupts = <9 IRQ_TYPE_LEVEL_LOW>;
++#endif
+ 		status = "okay";
+ 
+ 		port {
+@@ -463,18 +446,12 @@
+ 					remote-endpoint = <&mipi1_sensor_ep>;
+ 				};
+ 			};
+-		};
++	};
+ };
+ 
+ &iomuxc {
+ 	pinctrl-names = "default";
+ 
+-	pinctrl_csi_pwn: csi_pwn_grp {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_GPIO1_IO07_GPIO1_IO7		0x19
+-		>;
+-	};
+-
+ 	pinctrl_csi_rst: csi_rst_grp {
+ 		fsl,pins = <
+ 			MX8MM_IOMUXC_GPIO1_IO06_GPIO1_IO6		0x19
+@@ -509,28 +486,36 @@
+ 		>;
+ 	};
+ 
+-	pinctrl_flexspi0: flexspi0grp {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_NAND_ALE_QSPI_A_SCLK               0x1c2
+-			MX8MM_IOMUXC_NAND_CE0_B_QSPI_A_SS0_B            0x82
+-			MX8MM_IOMUXC_NAND_DATA00_QSPI_A_DATA0           0x82
+-			MX8MM_IOMUXC_NAND_DATA01_QSPI_A_DATA1           0x82
+-			MX8MM_IOMUXC_NAND_DATA02_QSPI_A_DATA2           0x82
+-			MX8MM_IOMUXC_NAND_DATA03_QSPI_A_DATA3           0x82
+-		>;
+-	};
+-
+ 	pinctrl_gpio_led: gpioledgrp {
+ 		fsl,pins = <
+ 			MX8MM_IOMUXC_NAND_READY_B_GPIO3_IO16	0x19
+ 		>;
+ 	};
+ 
+-	pinctrl_gpio_wlf: gpiowlfgrp {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_I2C4_SDA_GPIO5_IO21	0xd6
+-		>;
+-	};
++	pinctrl_gpio_led_navq: gpioledgrp2 {
++		fsl,pins = <
++			MX8MM_IOMUXC_GPIO1_IO06_GPIO1_IO6   0x19
++		>;
++	};
++
++
++	pinctrl_pwm1: pwm1 {
++		fsl,pins = <
++			MX8MM_IOMUXC_SPDIF_EXT_CLK_PWM1_OUT 0xc6
++		>;
++	};
++
++	pinctrl_pwm2: pwm2 {
++		fsl,pins = <
++			MX8MM_IOMUXC_SPDIF_RX_PWM2_OUT 0xc6
++		>;
++	};
++
++	pinctrl_pwm3: pwm3 {
++		fsl,pins = <
++			MX8MM_IOMUXC_SPDIF_TX_PWM3_OUT 0xc6
++		>;
++	};
+ 
+ 	pinctrl_i2c1: i2c1grp {
+ 		fsl,pins = <
+@@ -572,45 +557,32 @@
+ 		>;
+ 	};
+ 
+-	pinctrl_pcie0: pcie0grp {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_I2C4_SCL_PCIE1_CLKREQ_B	0x61 /* open drain, pull up */
+-			MX8MM_IOMUXC_GPIO1_IO05_GPIO1_IO5	0x41
+-			MX8MM_IOMUXC_SAI2_RXFS_GPIO4_IO21	0x41
+-		>;
+-	};
+-
+ 	pinctrl_pmic: pmicirq {
+ 		fsl,pins = <
+ 			MX8MM_IOMUXC_GPIO1_IO03_GPIO1_IO3		0x41
+ 		>;
+ 	};
+ 
+-	pinctrl_pdm: pdmgrp {
++	pinctrl_typec1: typec1grp {
+ 		fsl,pins = <
+-			MX8MM_IOMUXC_SAI5_MCLK_SAI5_MCLK	0xd6
+-			MX8MM_IOMUXC_SAI5_RXC_PDM_CLK		0xd6
+-			MX8MM_IOMUXC_SAI5_RXFS_SAI5_RX_SYNC	0xd6
+-			MX8MM_IOMUXC_SAI5_RXD0_PDM_DATA0	0xd6
+-			MX8MM_IOMUXC_SAI5_RXD1_PDM_DATA1	0xd6
+-			MX8MM_IOMUXC_SAI5_RXD2_PDM_DATA2	0xd6
+-			MX8MM_IOMUXC_SAI5_RXD3_PDM_DATA3	0xd6
++			MX8MM_IOMUXC_SAI2_RXFS_GPIO4_IO21	0x159
+ 		>;
+ 	};
+ 
+-	pinctrl_spdif1: spdif1grp {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_SPDIF_TX_SPDIF1_OUT	0xd6
+-			MX8MM_IOMUXC_SPDIF_RX_SPDIF1_IN		0xd6
+-		>;
+-	};
+ 
+-	pinctrl_typec1: typec1grp {
++	pinctrl_otg_en: otggrp {
+ 		fsl,pins = <
+-			MX8MM_IOMUXC_SD1_STROBE_GPIO2_IO11	0x159
++			MX8MM_IOMUXC_SD2_WP_GPIO2_IO20		0x19
+ 		>;
+ 	};
+ 
++	pinctrl_5vpp_en: pwr5vppgrp {
++		fsl,pins = <
++			MX8MM_IOMUXC_GPIO1_IO07_GPIO1_IO7        0x19
++		>;
++	};
++
++
+ 	pinctrl_uart1: uart1grp {
+ 		fsl,pins = <
+ 			MX8MM_IOMUXC_UART1_RXD_UART1_DCE_RX	0x140
+@@ -678,7 +650,7 @@
+ 
+ 	pinctrl_usdhc2_gpio: usdhc2grpgpio {
+ 		fsl,pins = <
+-			MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c4
++			MX8MM_IOMUXC_SD2_CD_B_GPIO2_IO12	0x1c0
+ 		>;
+ 	};
+ 
+@@ -822,3 +794,22 @@
+ &gpu {
+ 	status = "okay";
+ };
++
++
++&pwm1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_pwm1>;
++	status = "okay";
++};
++
++&pwm2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_pwm2>;
++	status = "okay";
++};
++
++&pwm3 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_pwm3>;
++	status = "okay";
++};
+-- 
+2.17.1
+
