@@ -13,7 +13,8 @@ export PACKAGE_INSTALL = "${IMAGE_INSTALL}"
 APTGET_CHROOT_DIR = "${IMAGE_ROOTFS}"
 APTGET_SKIP_UPGRADE = "1"
 
-ROOTFS_POSTPROCESS_COMMAND_append = "do_aptget_update; do_update_host; do_update_dns; do_enable_network_manager;"
+ROOTFS_POSTPROCESS_COMMAND_append = "do_aptget_update; do_update_host; do_update_dns; do_fix_ldconfig;"
+IMAGE_PREPROCESS_COMMAND_append = " do_fix_connman_conflict;"
 
 REQUIRED_DISTRO_FEATURES = "wayland"
 CORE_IMAGE_BASE_INSTALL += "weston weston-init"
@@ -302,6 +303,7 @@ APTGET_EXTRA_PACKAGES += "\
 	net-tools \
 	openssh-server \
 	python3-future libtool autoconf pkg-config \
+	bluez connman \ 
 "
 APTGET_EXTRA_SOURCE_PACKAGES += "\
 	iproute2 \
@@ -376,18 +378,26 @@ fakeroot do_update_dns() {
 	set +x
 }
 
-fakeroot do_enable_network_manager() {
+do_fix_connman_conflict() {
 	set -x
 
-	# In bionic, but not in xenial. We want all [network] interfaces to be managed
-	# so that we do not have to mess with interface files individually
-	if [ -e "${APTGET_CHROOT_DIR}/usr/lib/NetworkManager/conf.d/10-globally-managed-devices.conf" ]; then
-		sed -i -E "s/^unmanaged-devices\=\*/unmanaged-devices\=none/g" "${APTGET_CHROOT_DIR}/usr/lib/NetworkManager/conf.d/10-globally-managed-devices.conf"
-	fi
+	#rm ${IMAGE_ROOTFS}/etc/systemd/system/network-online.target.wants/NetworkManager-wait-online.service
+	#rm ${IMAGE_ROOTFS}/etc/systemd/system/dbus-org.freedesktop.nm-dispatcher.service
+	#rm ${IMAGE_ROOTFS}/etc/systemd/system/multi-user.target.wants/NetworkManager.service
+	rm ${IMAGE_ROOTFS}/etc/systemd/system/dbus-org.freedesktop.resolve1.service
+	rm ${IMAGE_ROOTFS}/etc/systemd/system/multi-user.target.wants/systemd-resolved.service
 
 	set +x
 }
 
+fakeroot do_fix_ldconfig() {
+	#Ld config mises /usr/lib path
+	set -x
+
+	echo >>"${APTGET_CHROOT_DIR}/etc/ld.so.conf.d/01-yocto.conf" "/usr/lib"
+
+	set +x
+}
 
 IMAGE_ROOTFS_SIZE ?= "8192"
 IMAGE_ROOTFS_EXTRA_SPACE_append = "${@bb.utils.contains("DISTRO_FEATURES", "systemd", " + 4096", "" ,d)}"
