@@ -8,4 +8,5 @@ SRC_URI += " \
     file://0005-OV5645-Disable-auto-focus-on-initialization.patch \
     file://0006-OV5645-Disable-regulators-if-camera-is-not-found.patch \
     file://0007-dts-bug-fix.patch \
+    file://0008-arm64-dts-imx8mm-navq-Update-dts-to-board-rev2a.patch \
 "
