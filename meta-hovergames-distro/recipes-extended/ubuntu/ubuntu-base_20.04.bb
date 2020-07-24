@@ -99,11 +99,11 @@ RCONFLICTS_${PN} += " glib-2.0 libglib-2.0-0 python3-core python3-dev \
                       update-alternatives-opkg pam-plugin-unix \
                       libpam-runtime shadow-base shadow dbus polkit \
                       systemd systemd-dev iso-codes-dev \ 
-                      shared-mime-info-dev "
+                      shared-mime-info-dev bluez5 "
 RREPLACES_${PN} += " glib-2.0 libglib-2.0-0 python3-core python3-dev \
                      python3-distutils python3-pickle python3-xml \
                      update-alternatives-opkg pam-plugin-unix \
                      libpam-runtime shadow-base shadow dbus polkit \
                      systemd systemd-dev iso-codes-dev \
-                     shared-mime-info-dev "
+                     shared-mime-info-dev bluez5 "
 RPROVIDES_${PN}_ubuntu += " libglib-2.0 "
