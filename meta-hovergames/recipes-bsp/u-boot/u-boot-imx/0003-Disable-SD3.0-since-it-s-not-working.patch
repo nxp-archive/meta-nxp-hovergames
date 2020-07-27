@@ -1,0 +1,26 @@
+From 16fc86c58c571326e33c8aaabde1c56fbba8bcc1 Mon Sep 17 00:00:00 2001
+From: Tom Hochstein <tom.hochstein@nxp.com>
+Date: Mon, 27 Jul 2020 07:26:47 -0700
+Subject: [PATCH] Disable SD3.0 since it's not working
+
+Signed-off-by: Tom Hochstein <tom.hochstein@nxp.com>
+---
+ arch/arm/dts/imx8mm-navq-u-boot.dtsi | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/arm/dts/imx8mm-navq-u-boot.dtsi b/arch/arm/dts/imx8mm-navq-u-boot.dtsi
+index 2e8e92d0af..dfcff3cf2a 100644
+--- a/arch/arm/dts/imx8mm-navq-u-boot.dtsi
++++ b/arch/arm/dts/imx8mm-navq-u-boot.dtsi
+@@ -125,8 +125,6 @@
+ 
+ &usdhc2 {
+ 	u-boot,dm-spl;
+-	sd-uhs-sdr104;
+-	sd-uhs-ddr50;
+ 	non-removable;
+ 	assigned-clocks = <&clk IMX8MM_CLK_USDHC2>;
+ 	assigned-clock-rates = <400000000>;
+-- 
+2.17.1
+
