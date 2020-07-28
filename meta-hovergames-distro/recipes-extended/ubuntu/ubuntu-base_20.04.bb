@@ -94,16 +94,37 @@ xdg-user-dirs xz-utils zlib1g \
 # Extra packages that Ubuntu will replace and thus enables the use of 
 # Yocto packages such as gstreamer to be used in Ubuntu without package conflitcs
 
-RCONFLICTS_${PN} += " glib-2.0 libglib-2.0-0 python3-core python3-dev \
+RCONFLICTS_${PN} += " glib-2.0 libglib-2.0-0 libglib-2.0-utils python3-core python3-dev \
                       python3-distutils python3-pickle python3-xml \
                       update-alternatives-opkg pam-plugin-unix \
                       libpam-runtime shadow-base shadow dbus polkit \
                       systemd systemd-dev iso-codes-dev \ 
-                      shared-mime-info-dev bluez5 "
-RREPLACES_${PN} += " glib-2.0 libglib-2.0-0 python3-core python3-dev \
+                      shared-mime-info-dev bluez5 \ 
+                      python3-stringold python3-numbers python3-numbers \
+                      python3-shell python3-pprint python3-logging \
+                      python3-datetime python3-difflib python3-typing \
+                      python3-debugger python3-audio python3-codecs \
+                      python3-mime python3-mmap python3-threading \
+                      python3-ctypes python3-math python3-crypt \
+                      python3-email python3-io python3-netclient \
+                      python3-asyncio python3-unittest python3-pydoc \
+                      python3-misc python3-doctest python3-multiprocessing \
+                      python3-compression"
+
+RREPLACES_${PN} += " glib-2.0 libglib-2.0-0 libglib-2.0-utils python3-core python3-dev \
                      python3-distutils python3-pickle python3-xml \
                      update-alternatives-opkg pam-plugin-unix \
                      libpam-runtime shadow-base shadow dbus polkit \
                      systemd systemd-dev iso-codes-dev \
-                     shared-mime-info-dev bluez5 "
+                     shared-mime-info-dev bluez5 \
+                     python3-stringold python3-numbers python3-numbers \
+                     python3-shell python3-pprint python3-logging \
+                     python3-datetime python3-difflib python3-typing \
+                     python3-debugger python3-audio python3-codecs \
+                     python3-mime python3-mmap python3-threading \
+                     python3-ctypes python3-math python3-crypt \
+                     python3-email python3-io python3-netclient \
+                     python3-asyncio python3-unittest python3-pydoc \
+                     python3-misc python3-doctest python3-multiprocessing \
+                     python3-compression"
 RPROVIDES_${PN}_ubuntu += " libglib-2.0 "

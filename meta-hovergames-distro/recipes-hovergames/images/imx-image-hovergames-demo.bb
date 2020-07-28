@@ -14,7 +14,7 @@ APTGET_CHROOT_DIR = "${IMAGE_ROOTFS}"
 APTGET_SKIP_UPGRADE = "1"
 
 ROOTFS_POSTPROCESS_COMMAND_append = "do_aptget_update; do_update_host; do_update_dns; do_fix_ldconfig;"
-IMAGE_PREPROCESS_COMMAND_append = " do_fix_connman_conflict;"
+IMAGE_PREPROCESS_COMMAND_append = " do_fix_connman_conflict; do_enable_bluetooth;"
 
 REQUIRED_DISTRO_FEATURES = "wayland"
 CORE_IMAGE_BASE_INSTALL += "weston weston-init"
@@ -280,6 +280,148 @@ IMAGE_INSTALL += " \
     gstreamer1.0-plugins-good-wavparse       \
     gstreamer1.0-plugins-good-ximagesrc      \
     gstreamer1.0-plugins-good-y4menc         \
+    gstreamer1.0-plugins-bad-inter                    \
+    gstreamer1.0-plugins-bad-locale-ro                \
+    libgsturidownloader-1.0                           \
+    gstreamer1.0-plugins-bad-locale-de                \
+    gstreamer1.0-plugins-bad-locale-mt                \
+    gstreamer1.0-plugins-bad-locale-fi                \
+    gstreamer1.0-plugins-bad-gdp                      \
+    gstreamer1.0-plugins-bad-asfmux                   \
+    gstreamer1.0-plugins-bad-locale-da                \
+    gstreamer1.0-plugins-bad-locale-af                \
+    libgstwayland-1.0                                 \
+    gstreamer1.0-plugins-bad-dvb                      \
+    gstreamer1.0-plugins-bad-closedcaption            \
+    gstreamer1.0-plugins-bad-netsim                   \
+    gstreamer1.0-plugins-bad-dashdemux                \
+    gstreamer1.0-plugins-bad-staticdev                \
+    gstreamer1.0-plugins-bad-legacyrawparse           \
+    gstreamer1.0-plugins-bad-adpcmenc                 \
+    gstreamer1.0-plugins-bad-ivfparse                 \
+    gstreamer1.0-plugins-bad-meta                     \
+    libgstcodecparsers-1.0                            \
+    gstreamer1.0-plugins-bad-locale-uk                \
+    gstreamer1.0-plugins-bad-locale-sv                \
+    gstreamer1.0-plugins-bad-videoframe-audiolevel    \
+    gstreamer1.0-plugins-bad-locale-el                \
+    gstreamer1.0-plugins-bad-hls                      \
+    gstreamer1.0-plugins-bad-geometrictransform       \
+    gstreamer1.0-plugins-bad-webp                     \
+    gstreamer1.0-plugins-bad-yadif                    \
+    gstreamer1.0-plugins-bad-sdpelem                  \
+    gstreamer1.0-plugins-bad-pnm                      \
+    gstreamer1.0-plugins-bad-bz2                      \
+    gstreamer1.0-plugins-bad-locale-zh-cn             \
+    gstreamer1.0-plugins-bad-segmentclip              \
+    gstreamer1.0-plugins-bad-faceoverlay              \
+    gstreamer1.0-plugins-bad-locale-nb                \
+    gstreamer1.0-plugins-bad-mpegtsdemux              \
+    gstreamer1.0-plugins-bad-dtls                     \
+    gstreamer1.0-plugins-bad-dbg                      \
+    gstreamer1.0-plugins-bad-gaudieffects             \
+    gstreamer1.0-plugins-bad-ttmlsubs                 \
+    gstreamer1.0-plugins-bad-smoothstreaming          \
+    gstreamer1.0-plugins-bad-accurip                  \
+    libgstmpegts-1.0                                  \
+    gstreamer1.0-plugins-bad-locale-it                \
+    libgstsctp-1.0                                    \
+    gstreamer1.0-plugins-bad-audiofxbad               \
+    gstreamer1.0-plugins-bad-kms                      \
+    gstreamer1.0-plugins-bad-mpegpsmux                \
+    gstreamer1.0-plugins-bad-mpegpsdemux              \
+    gstreamer1.0-plugins-bad-locale-vi                \
+    gstreamer1.0-plugins-bad-dvbsuboverlay            \
+    gstreamer1.0-plugins-bad-audiovisualizers         \
+    gstreamer1.0-plugins-bad-ipcpipeline              \
+    gstreamer1.0-plugins-bad-curl                     \
+    gstreamer1.0-plugins-bad-locale-es                \
+    gstreamer1.0-plugins-bad-audiolatency             \
+    gstreamer1.0-plugins-bad-videoparsersbad          \
+    gstreamer1.0-plugins-bad                          \
+    gstreamer1.0-plugins-bad-locale-ky                \
+    gstreamer1.0-plugins-bad-locale-nl                \
+    gstreamer1.0-plugins-bad-subenc                   \
+    gstreamer1.0-plugins-bad-id3tag                   \
+    gstreamer1.0-plugins-bad-locale-cs                \
+    gstreamer1.0-plugins-bad-locale-fur               \
+    gstreamer1.0-plugins-bad-locale-ja                \
+    gstreamer1.0-plugins-bad-speed                    \
+    gstreamer1.0-plugins-bad-src                      \
+    gstreamer1.0-plugins-bad-freeverb                 \
+    gstreamer1.0-plugins-bad-ivtc                     \
+    gstreamer1.0-plugins-bad-rsvg                     \
+    gstreamer1.0-plugins-bad-locale-sr                \
+    gstreamer1.0-plugins-bad-shm                      \
+    gstreamer1.0-plugins-bad-pcapparse                \
+    gstreamer1.0-plugins-bad-locale-lt                \
+    gstreamer1.0-plugins-bad-jpegformat               \
+    gstreamer1.0-plugins-bad-fieldanalysis            \
+    gstreamer1.0-plugins-bad-locale-pl                \
+    gstreamer1.0-plugins-bad-fbdevsink                \
+    gstreamer1.0-plugins-bad-locale-en-gb             \
+    gstreamer1.0-plugins-bad-locale-fr                \
+    gstreamer1.0-plugins-bad-debugutilsbad            \
+    libgstbadaudio-1.0                                \
+    gstreamer1.0-plugins-bad-locale-sl                \
+    gstreamer1.0-plugins-bad-locale-hu                \
+    gstreamer1.0-plugins-bad-sbc                      \
+    gstreamer1.0-plugins-bad-vmnc                     \
+    gstreamer1.0-plugins-bad-waylandsink              \
+    libgstphotography-1.0                             \
+    gstreamer1.0-plugins-bad-audiobuffersplit         \
+    gstreamer1.0-plugins-bad-bayer                    \
+    gstreamer1.0-plugins-bad-locale-gl                \
+    libgstbasecamerabinsrc-1.0                        \
+    gstreamer1.0-plugins-bad-locale-pt-br             \
+    libgstplayer-1.0                                  \
+    gstreamer1.0-plugins-bad-y4mdec                   \
+    gstreamer1.0-plugins-bad-jp2kdecimator            \
+    gstreamer1.0-plugins-bad-removesilence            \
+    gstreamer1.0-plugins-bad-rfbsrc                   \
+    gstreamer1.0-plugins-bad-locale-ru                \
+    gstreamer1.0-plugins-bad-siren                    \
+    gstreamer1.0-plugins-bad-locale-az                \
+    gstreamer1.0-plugins-bad-adpcmdec                 \
+    gstreamer1.0-plugins-bad-mpegtsmux                \
+    gstreamer1.0-plugins-bad-locale-ca                \
+    gstreamer1.0-plugins-bad-audiomixmatrix           \
+    gstreamer1.0-plugins-bad-coloreffects             \
+    gstreamer1.0-plugins-bad-sndfile                  \
+    gstreamer1.0-plugins-bad-camerabin                \
+    gstreamer1.0-plugins-bad-locale-sq                \
+    libgstisoff-1.0                                   \
+    libgstwebrtc-1.0                                  \
+    gstreamer1.0-plugins-bad-festival                 \
+    libgstadaptivedemux-1.0                           \
+    gstreamer1.0-plugins-bad-dvdspu                   \
+    gstreamer1.0-plugins-bad-decklink                 \
+    gstreamer1.0-plugins-bad-timecode                 \
+    gstreamer1.0-plugins-bad-uvch264                  \
+    gstreamer1.0-plugins-bad-autoconvert              \
+    gstreamer1.0-plugins-bad-locale-tr                \
+    gstreamer1.0-plugins-bad-locale-hr                \
+    gstreamer1.0-plugins-bad-locale-sk                \
+    gstreamer1.0-plugins-bad-locale-eo                \
+    libgstinsertbin-1.0                               \
+    gstreamer1.0-plugins-bad-videosignal              \
+    gstreamer1.0-plugins-bad-bluez                    \
+    gstreamer1.0-plugins-bad-aiff                     \
+    gstreamer1.0-plugins-bad-interlace                \
+    gstreamer1.0-plugins-bad-videofiltersbad          \
+    gstreamer1.0-plugins-bad-locale-ast               \
+    gstreamer1.0-plugins-bad-locale-eu                \
+    gstreamer1.0-plugins-bad-locale-lv                \
+    gstreamer1.0-plugins-bad-midi                     \
+    gstreamer1.0-plugins-bad-rtponvif                 \
+    gstreamer1.0-plugins-bad-locale-bg                \
+    gstreamer1.0-plugins-bad-locale-id                \
+    gstreamer1.0-plugins-bad-smooth                   \
+    gstreamer1.0-plugins-bad-dev                      \
+    gstreamer1.0-plugins-bad-locale-or                \
+    gstreamer1.0-plugins-bad-mxf                      \
+    gstreamer1.0-plugins-bad-frei0r                   \
+    gstreamer1.0-plugins-bad-proxy                    \
 "
 
 # GPU driver
@@ -397,6 +539,30 @@ fakeroot do_fix_ldconfig() {
 	echo >>"${APTGET_CHROOT_DIR}/etc/ld.so.conf.d/01-yocto.conf" "/usr/lib"
 
 	set +x
+}
+
+
+fakeroot do_enable_bluetooth() {
+    set -x
+    
+    echo >> "${APTGET_CHROOT_DIR}/lib/systemd/system/hciattach.service" "[Unit] \n
+Description=Configure Bluetooth Modems connected by UART \n
+Before=bluetooth.service \n
+After=dev-serial1.device \n
+\n
+[Service] \n
+Type=forking \n
+ExecStartPre=-/usr/bin/hciattach /dev/ttymxc0 qualcomm -t120 115200 flow \n
+ExecStart=-/usr/bin/hciattach /dev/ttymxc0 qualcomm -t120 115200 flow \n
+ExecStopPost=-/usr/bin/hciattach /dev/ttymxc0 qualcomm -t120 115200 flow \n
+ \n
+[Install] \n
+WantedBy=multi-user.target \n
+" 
+
+    ln -s /lib/systemd/system/hciattach.service ${IMAGE_ROOTFS}/etc/systemd/system/multi-user.target.wants/hciattach.service
+    
+    set +x
 }
 
 IMAGE_ROOTFS_SIZE ?= "8192"
