@@ -1,18 +1,11 @@
 #
-# This class will generate the proper postinst/postrm scriptlets for pixbuf
-# packages.
+# Override postint with an empty function to fix postinst problems
 #
-
 
 pixbufcache_common() {
 }
 
+
 python populate_packages_append() {
 }
 
-gdkpixbuf_complete() {
-}
-
-
-pixbufcache_sstate_postinst() {
-}
