@@ -109,7 +109,9 @@ RCONFLICTS_${PN} += " glib-2.0 libglib-2.0-0 libglib-2.0-utils python3-core pyth
                       python3-email python3-io python3-netclient \
                       python3-asyncio python3-unittest python3-pydoc \
                       python3-misc python3-doctest python3-multiprocessing \
-                      python3-compression"
+                      python3-compression python3-html python3-netserver \
+                      libtirpc3 python3-compile python3-json python3-unixadmin \
+                      python3-plistlib python3-xmlrpc"
 
 RREPLACES_${PN} += " glib-2.0 libglib-2.0-0 libglib-2.0-utils python3-core python3-dev \
                      python3-distutils python3-pickle python3-xml \
@@ -126,5 +128,7 @@ RREPLACES_${PN} += " glib-2.0 libglib-2.0-0 libglib-2.0-utils python3-core pytho
                      python3-email python3-io python3-netclient \
                      python3-asyncio python3-unittest python3-pydoc \
                      python3-misc python3-doctest python3-multiprocessing \
-                     python3-compression"
+                     python3-compression python3-html python3-netserver \ 
+                     libtirpc3 python3-compile python3-json python3-unixadmin \
+                     python3-plistlib python3-xmlrpc"
 RPROVIDES_${PN}_ubuntu += " libglib-2.0 "

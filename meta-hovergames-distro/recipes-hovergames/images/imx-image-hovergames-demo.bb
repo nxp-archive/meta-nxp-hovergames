@@ -13,7 +13,7 @@ export PACKAGE_INSTALL = "${IMAGE_INSTALL}"
 APTGET_CHROOT_DIR = "${IMAGE_ROOTFS}"
 APTGET_SKIP_UPGRADE = "1"
 
-ROOTFS_POSTPROCESS_COMMAND_append = "do_aptget_update; do_update_host; do_update_dns; do_fix_ldconfig;"
+ROOTFS_POSTPROCESS_COMMAND_append = "do_fix_ldconfig; do_aptget_update; do_update_host; do_update_dns;"
 IMAGE_PREPROCESS_COMMAND_append = " do_fix_connman_conflict; do_enable_bluetooth;"
 
 REQUIRED_DISTRO_FEATURES = "wayland"
@@ -44,7 +44,6 @@ IMAGE_INSTALL += "\
 #"
 #####
 IMAGE_FEATURES += " \
-    dbg-pkgs \
     dev-pkgs \
     tools-sdk \
     debug-tweaks \
@@ -446,6 +445,8 @@ APTGET_EXTRA_PACKAGES += "\
 	openssh-server \
 	python3-future libtool autoconf pkg-config \
 	bluez connman \ 
+	python-is-python3 \
+	libcairo2 libpixman-1-0 libpango-1.0-0 libpangocairo-1.0-0 \
 "
 APTGET_EXTRA_SOURCE_PACKAGES += "\
 	iproute2 \
@@ -532,11 +533,25 @@ do_fix_connman_conflict() {
 	set +x
 }
 
+
+#We need to add Yocto libraries to LD path and remove conflicting libraries
 fakeroot do_fix_ldconfig() {
 	#Ld config mises /usr/lib path
 	set -x
 
 	echo >>"${APTGET_CHROOT_DIR}/etc/ld.so.conf.d/01-yocto.conf" "/usr/lib"
+	rm ${IMAGE_ROOTFS}/usr/lib/libatk*
+    rm ${IMAGE_ROOTFS}/usr/lib/libgtk*
+    rm ${IMAGE_ROOTFS}/usr/lib/libgudev*
+    rm ${IMAGE_ROOTFS}/usr/lib/libgdk*
+    rm ${IMAGE_ROOTFS}/usr/lib/libcairo*
+    rm ${IMAGE_ROOTFS}/usr/lib/libepoxy*
+    rm ${IMAGE_ROOTFS}/usr/lib/libpango*
+    rm ${IMAGE_ROOTFS}/usr/lib/libpixman*
+    rm ${IMAGE_ROOTFS}/usr/lib/libpng*
+    rm ${IMAGE_ROOTFS}/usr/lib/libfreetype*
+    rm ${IMAGE_ROOTFS}/usr/lib/libfont*
+    rm ${IMAGE_ROOTFS}/etc/fonts/fonts.conf
 
 	set +x
 }
