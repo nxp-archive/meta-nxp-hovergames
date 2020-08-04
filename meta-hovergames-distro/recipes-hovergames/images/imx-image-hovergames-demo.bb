@@ -540,8 +540,6 @@ fakeroot do_fix_ldconfig() {
 	set -x
 
 	echo >>"${APTGET_CHROOT_DIR}/etc/ld.so.conf.d/01-yocto.conf" "/usr/lib"
-	rm ${IMAGE_ROOTFS}/usr/lib/libatk*
-    rm ${IMAGE_ROOTFS}/usr/lib/libgtk*
     rm ${IMAGE_ROOTFS}/usr/lib/libgudev*
     rm ${IMAGE_ROOTFS}/usr/lib/libgdk*
     rm ${IMAGE_ROOTFS}/usr/lib/libcairo*
