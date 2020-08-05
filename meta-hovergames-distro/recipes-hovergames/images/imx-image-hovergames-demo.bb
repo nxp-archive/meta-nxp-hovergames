@@ -98,6 +98,7 @@ HOST_NAME = "${MACHINE_ARCH}"
 ##############################################################################
 
 IMAGE_INSTALL += " \
+    imx-gst1.0-plugin \
     gstreamer1.0 \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-base                      \
