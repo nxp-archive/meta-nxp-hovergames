@@ -59,24 +59,43 @@ IMAGE_FEATURES += " \
        bb.utils.contains('DISTRO_FEATURES',     'x11', 'x11-base x11-sato', \
                                                        '', d), d)} \
 "
-ERPC_COMPS ?= ""
-ERPC_COMPS_append_mx7ulp = "packagegroup-imx-erpc"
 
-CORE_IMAGE_EXTRA_INSTALL += " \
-    packagegroup-core-full-cmdline \
-    packagegroup-tools-bluetooth \
-    packagegroup-fsl-tools-audio \
-    packagegroup-fsl-tools-gpu \
-    packagegroup-fsl-tools-gpu-external \
-    packagegroup-fsl-tools-testapps \
-    packagegroup-fsl-tools-benchmark \
-    packagegroup-fsl-gstreamer1.0 \
-    packagegroup-fsl-gstreamer1.0-full \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'weston-init', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'x11 wayland', 'weston-xwayland xterm', '', d)} \
-    ${ERPC_COMPS} \
-    "
 #######
+
+APTGET_EXTRA_PACKAGES_SERVICES_DISABLED += "\
+	network-manager \
+"
+APTGET_EXTRA_PACKAGES += "\
+	console-setup locales \
+	mc htop \
+\
+	apt git vim \
+	ethtool wget ftp iputils-ping lrzsz \
+	net-tools \
+	openssh-server \
+	python3-future libtool autoconf pkg-config \
+	bluez connman \
+	python-is-python3 \
+	libcairo2 libpixman-1-0 libpango-1.0-0 libpangocairo-1.0-0 \
+"
+APTGET_EXTRA_SOURCE_PACKAGES += "\
+	iproute2 \
+"
+
+# Add user navq with password navq and default shell bash
+USER_SHELL_BASH = "/bin/bash"
+USER_PASSWD_NAVQ = "\$5\$nEa6qsZxa\$YepRevGzGA375yrEUvZgoeXnFGEgfFrOrFeGyi.Gp09"
+APTGET_ADD_USERS = "navq:${USER_PASSWD_NAVQ}:${USER_SHELL_BASH}"
+
+HOST_NAME = "${MACHINE_ARCH}"
+
+##############################################################################
+# NOTE: We cannot install arbitrary Yocto packages as they will
+# conflict with the content of the prebuilt Ubuntu rootfs and pull
+# in dependencies that may break the rootfs.
+# Any package addition needs to be carefully evaluated with respect
+# to the final image that we build.
+##############################################################################
 
 IMAGE_INSTALL += " \
     gstreamer1.0 \
@@ -431,41 +450,6 @@ IMAGE_INSTALL += " \
     weston \
     weston-xwayland \
 "
-
-APTGET_EXTRA_PACKAGES_SERVICES_DISABLED += "\
-	network-manager \
-"
-APTGET_EXTRA_PACKAGES += "\
-	console-setup locales \
-	mc htop \
-\
-	apt git vim \
-	ethtool wget ftp iputils-ping lrzsz \
-	net-tools \
-	openssh-server \
-	python3-future libtool autoconf pkg-config \
-	bluez connman \ 
-	python-is-python3 \
-	libcairo2 libpixman-1-0 libpango-1.0-0 libpangocairo-1.0-0 \
-"
-APTGET_EXTRA_SOURCE_PACKAGES += "\
-	iproute2 \
-"
-
-# Add user navq with password navq and default shell bash
-USER_SHELL_BASH = "/bin/bash"
-USER_PASSWD_NAVQ = "\$5\$nEa6qsZxa\$YepRevGzGA375yrEUvZgoeXnFGEgfFrOrFeGyi.Gp09"
-APTGET_ADD_USERS = "navq:${USER_PASSWD_NAVQ}:${USER_SHELL_BASH}"
-
-HOST_NAME = "${MACHINE_ARCH}"
-
-##############################################################################
-# NOTE: We cannot install arbitrary Yocto packages as they will
-# conflict with the content of the prebuilt Ubuntu rootfs and pull
-# in dependencies that may break the rootfs.
-# Any package addition needs to be carefully evaluated with respect
-# to the final image that we build.
-##############################################################################
 
 # Minimum support for LS2 and S32V specific elements.
 IMAGE_INSTALL_append_fsl-lsch3 += "\
