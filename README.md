@@ -19,7 +19,7 @@ Download the Yocto Project BSP
 ```
 $ mkdir hovergames
 $ cd hovergames
-$ repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.24-2.1.0_demo_hovergames.xml
+$ repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.24-2.1.0_hovergames.xml
 $ repo sync
 ```
 
