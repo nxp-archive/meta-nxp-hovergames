@@ -549,9 +549,7 @@ After=dev-serial1.device \n
 \n
 [Service] \n
 Type=forking \n
-ExecStartPre=-/usr/bin/hciattach /dev/ttymxc0 qualcomm -t120 115200 flow \n
 ExecStart=-/usr/bin/hciattach /dev/ttymxc0 qualcomm -t120 115200 flow \n
-ExecStopPost=-/usr/bin/hciattach /dev/ttymxc0 qualcomm -t120 115200 flow \n
  \n
 [Install] \n
 WantedBy=multi-user.target \n
