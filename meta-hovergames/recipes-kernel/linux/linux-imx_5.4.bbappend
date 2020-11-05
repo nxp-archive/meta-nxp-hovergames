@@ -10,12 +10,12 @@ SRC_URI += " \
     file://0005-OV5645-Disable-auto-focus-on-initialization.patch \
     file://0006-OV5645-Disable-regulators-if-camera-is-not-found.patch \
     file://0007-dts-bug-fix.patch \
-    file://0008-imx-sdma-firmware-load-hotfix.patch \
-    file://0009-arm64-dts-imx8mm-navq-Update-dts-to-board-rev2a.patch \
-    file://0010-arm64-imx8mm-navq-fix-LDO1-and-LDO2-voltages.patch \
-    file://0011-Add-support-for-clkout1-2-clocks-into-the-imx8mm-clo.patch \
-    file://0012-Fix-OV5645-clock-configuration.patch \
-    file://0013-Mask-PTN5110-FAULT_TATUS_MASK-register-to-prevent-sp.patch \
+    file://0008-arm64-dts-imx8mm-navq-Update-dts-to-board-rev2a.patch \
+    file://0009-arm64-imx8mm-navq-fix-LDO1-and-LDO2-voltages.patch \
+    file://0010-Add-support-for-clkout1-2-clocks-into-the-imx8mm-clo.patch \
+    file://0011-Fix-OV5645-clock-configuration.patch \
+    file://0012-Mask-PTN5110-FAULT_TATUS_MASK-register-to-prevent-sp.patch \
+    file://0013-linux-imx-add-ecspi2-device-to-navq-dts-and-enable-s.patch \
 "
 
 do_configure_append () {

@@ -1,0 +1,53 @@
+From 0abbf18d9fa4416f326ba44888cc4ff8762a31cd Mon Sep 17 00:00:00 2001
+From: Landon Haugh <landon.haugh@nxp.com>
+Date: Wed, 16 Sep 2020 13:05:24 -0500
+Subject: [PATCH] linux-imx: add ecspi2 device to navq dts and enable spidev
+
+Signed-off-by: Landon Haugh <landon.haugh@nxp.com>
+---
+ arch/arm64/boot/dts/freescale/imx8mm-navq.dts | 22 +++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+index 349683c897ec..eafa25381db4 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+@@ -451,6 +451,19 @@
+ 	};
+ };
+ 
++&ecspi2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_ecspi2>;
++	status = "okay";
++
++	spidev: spidev@0 {
++		status = "okay";
++		compatible = "spidev";
++		spi-max-frequency = <10000000>;
++		reg = <0>;
++	};
++};
++
+ &iomuxc {
+ 	pinctrl-names = "default";
+ 
+@@ -547,6 +560,15 @@
+ 		>;
+ 	};
+ 
++	pinctrl_ecspi2: ecspi2grp {
++		fsl,pins = <
++			MX8MM_IOMUXC_ECSPI2_SCLK_ECSPI2_SCLK		0x116
++			MX8MM_IOMUXC_ECSPI2_MOSI_ECSPI2_MOSI		0x116
++			MX8MM_IOMUXC_ECSPI2_MISO_ECSPI2_MISO		0x116
++			MX8MM_IOMUXC_ECSPI2_SS0_ECSPI2_SS0		0x116
++		>;
++	};	
++
+ 	pinctrl_mipi_dsi_en: mipi_dsi_en {
+ 		fsl,pins = <
+ 			MX8MM_IOMUXC_GPIO1_IO08_GPIO1_IO8		0x16
+-- 
+2.17.1
+
