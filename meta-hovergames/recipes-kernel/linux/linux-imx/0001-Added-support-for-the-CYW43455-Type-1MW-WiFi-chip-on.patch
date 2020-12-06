@@ -1,0 +1,101 @@
+From aebde222f01f8e7f236f3373899da7ead7eca067 Mon Sep 17 00:00:00 2001
+From: Sergei Poselenov <sposelenov@emcraft.com>
+Date: Sun, 6 Dec 2020 18:28:33 +0300
+Subject: [PATCH] Added support for the CYW43455 (Type 1MW) WiFi chip on a new
+ SOM variant.
+
+---
+ arch/arm64/boot/dts/freescale/imx8mm-navq-ddr4.dts | 26 ----------------------
+ arch/arm64/boot/dts/freescale/imx8mm-navq.dts      | 24 +++++++++++++++++---
+ 2 files changed, 21 insertions(+), 29 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-navq-ddr4.dts b/arch/arm64/boot/dts/freescale/imx8mm-navq-ddr4.dts
+index 0b25e0406c1d..1887cb0c69b2 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mm-navq-ddr4.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-navq-ddr4.dts
+@@ -53,13 +53,6 @@
+ 			MX8MM_IOMUXC_NAND_CE3_B_GPIO3_IO4	0x19
+ 		>;
+ 	};
+-
+-	pinctrl_wlan: wlangrp {
+-		fsl,pins = <
+-			MX8MM_IOMUXC_GPIO1_IO00_ANAMIX_REF_CLK_32K	0x141
+-			MX8MM_IOMUXC_SD1_DATA7_GPIO2_IO9		0x111
+-		>;
+-	};
+ };
+ 
+ &gpmi {
+@@ -76,22 +69,3 @@
+ &snvs_pwrkey {
+ 	status = "okay";
+ };
+-
+-&usdhc1 {
+-	#address-cells = <1>;
+-	#size-cells = <0>;
+-	pinctrl-0 = <&pinctrl_usdhc1>, <&pinctrl_wlan>;
+-	pinctrl-1 = <&pinctrl_usdhc1_100mhz>, <&pinctrl_wlan>;
+-	pinctrl-2 = <&pinctrl_usdhc1_200mhz>, <&pinctrl_wlan>;
+-	cap-power-off-card;
+-	/delete-property/ vmmc-supply;
+-	mmc-pwrseq = <&usdhc1_pwrseq>;
+-
+-	brcmf: bcrmf@1 {
+-		reg = <1>;
+-		compatible = "brcm,bcm4329-fmac";
+-		interrupt-parent = <&gpio2>;
+-		interrupts = <9 IRQ_TYPE_LEVEL_HIGH>;
+-		interrupt-names = "host-wake";
+-	};
+-};
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+index eafa25381db4..6e6bc531c72f 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
++++ b/arch/arm64/boot/dts/freescale/imx8mm-navq.dts
+@@ -199,16 +199,26 @@
+ };
+ 
+ &usdhc1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
+ 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+-	pinctrl-0 = <&pinctrl_usdhc1>, <&pinctrl_usdhc1_gpio>;
+-	pinctrl-1 = <&pinctrl_usdhc1_100mhz>, <&pinctrl_usdhc1_gpio>;
+-	pinctrl-2 = <&pinctrl_usdhc1_200mhz>, <&pinctrl_usdhc1_gpio>;
++	pinctrl-0 = <&pinctrl_usdhc1>, <&pinctrl_usdhc1_gpio>, <&pinctrl_wlan>;
++	pinctrl-1 = <&pinctrl_usdhc1_100mhz>, <&pinctrl_usdhc1_gpio>, <&pinctrl_wlan>;
++	pinctrl-2 = <&pinctrl_usdhc1_200mhz>, <&pinctrl_usdhc1_gpio>, <&pinctrl_wlan>;
+ 	bus-width = <4>;
+ 	vmmc-supply = <&reg_sd1_vmmc>;
+ 	pm-ignore-notify;
+ 	keep-power-in-suspend;
+ 	non-removable;
+ 	status = "okay";
++
++	brcmf: bcrmf@1 {
++	       reg = <1>;
++	       compatible = "brcm,bcm4329-fmac";
++	       interrupt-parent = <&gpio2>;
++	       interrupts = <9 IRQ_TYPE_LEVEL_HIGH>;
++	       interrupt-names = "host-wake";
++	};
+ };
+ 
+ &usdhc2 {
+@@ -767,6 +777,14 @@
+ 			MX8MM_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B	0xc6
+ 		>;
+ 	};
++
++	pinctrl_wlan: wlangrp {
++		fsl,pins = <
++			MX8MM_IOMUXC_GPIO1_IO00_ANAMIX_REF_CLK_32K	0x41
++			MX8MM_IOMUXC_SD1_DATA7_GPIO2_IO9		0x11
++		>;
++	};
++
+ };
+ 
+ &lcdif {
