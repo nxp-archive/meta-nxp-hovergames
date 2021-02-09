@@ -17,6 +17,7 @@ SRC_URI += " \
     file://0011-Fix-OV5645-clock-configuration.patch \
     file://0012-Mask-PTN5110-FAULT_TATUS_MASK-register-to-prevent-sp.patch \
     file://0013-linux-imx-add-ecspi2-device-to-navq-dts-and-enable-s.patch \
+    file://0001-Added-support-for-the-CYW43455-Type-1MW-WiFi-chip-on.patch \
 "
 
 do_configure_append () {
