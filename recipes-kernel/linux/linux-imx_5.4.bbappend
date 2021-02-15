@@ -13,4 +13,5 @@ SRC_URI += " \
     file://0010-Add-support-for-clkout1-2-clocks-into-the-imx8mm-clo.patch \
     file://0011-Fix-OV5645-clock-configuration.patch \
     file://0012-Mask-PTN5110-FAULT_TATUS_MASK-register-to-prevent-sp.patch \
+    file://0001-Added-support-for-the-CYW43455-Type-1MW-WiFi-chip-on.patch \
 "
