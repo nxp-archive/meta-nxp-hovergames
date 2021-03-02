@@ -15,6 +15,7 @@ do_install() {
     install -m 0644 ${S}/EULA.txt ${D}/home/navq/
     install -m 0644 ${S}/HoverGamesLicense.txt ${D}/home/navq/
     install -m 0644 ${S}/SCR.txt ${D}/home/navq/
+    chown -R navq:navq ${D}/home/navq
 }
 
 FILES_${PN} = "/home/navq"
