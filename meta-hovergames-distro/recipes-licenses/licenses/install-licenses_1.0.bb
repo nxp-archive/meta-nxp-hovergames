@@ -10,6 +10,11 @@ SRC_URI = " \
 
 S = "${WORKDIR}"
 
+inherit useradd
+USERADD_PACKAGES = "${PN}"
+GROUPADD_PARAM_${PN} = "--system navq"
+USERADD_PARAM_${PN} = "--system -U navq"
+
 do_install() {
     install -d ${D}/home/navq
     install -m 0644 ${S}/EULA.txt ${D}/home/navq/
