@@ -10,17 +10,11 @@ SRC_URI = " \
 
 S = "${WORKDIR}"
 
-inherit useradd
-USERADD_PACKAGES = "${PN}"
-GROUPADD_PARAM_${PN} = "--system navq"
-USERADD_PARAM_${PN} = "--system -U navq"
-
 do_install() {
-    install -d ${D}/home/navq
-    install -m 0644 ${S}/EULA.txt ${D}/home/navq/
-    install -m 0644 ${S}/HoverGamesLicense.txt ${D}/home/navq/
-    install -m 0644 ${S}/SCR.txt ${D}/home/navq/
-    chown -R navq:navq ${D}/home/navq
+    install -d ${D}/opt/licenses
+    install -m 0644 ${S}/EULA.txt ${D}/opt/licenses
+    install -m 0644 ${S}/HoverGamesLicense.txt ${D}/opt/licenses
+    install -m 0644 ${S}/SCR.txt ${D}/opt/licenses
 }
 
-FILES_${PN} = "/home/navq"
+FILES_${PN} = "/opt/licenses"
