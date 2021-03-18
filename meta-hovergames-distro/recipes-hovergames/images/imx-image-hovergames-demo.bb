@@ -443,6 +443,11 @@ IMAGE_INSTALL += " \
     gstreamer1.0-plugins-bad-proxy                    \
 "
 
+# Install license files to /opt/licenses
+IMAGE_INSTALL += " \
+    install-licenses \
+"
+
 # GPU driver
 
 IMAGE_INSTALL += " \
