@@ -18,6 +18,13 @@ SRC_URI += " \
     file://0012-Mask-PTN5110-FAULT_TATUS_MASK-register-to-prevent-sp.patch \
     file://0013-linux-imx-add-ecspi2-device-to-navq-dts-and-enable-s.patch \
     file://0001-Added-support-for-the-CYW43455-Type-1MW-WiFi-chip-on.patch \
+    file://0015-imx8mm-raw12-csi.patch \
+    file://0016-liteon-driver.patch  \
+    file://0017-liteon-driver-miravera.patch \
+    file://0018-liteon-driver-12bitoffload.patch \
+    file://0019-liteon-navq-dtb.patch \
+    file://0020-allow-odd-amount-lines-csi.patch \
+    file://liteon.cfg \
 "
 
 do_configure_append () {

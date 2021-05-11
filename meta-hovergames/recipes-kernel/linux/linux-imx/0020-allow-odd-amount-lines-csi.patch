@@ -1,0 +1,13 @@
+diff --git a/drivers/media/platform/mxc/capture/mxc_mipi_csi.c b/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
+index 1656d17a9304..8745b102ac4e 100644
+--- a/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
++++ b/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
+@@ -763,7 +763,7 @@ static int mipi_csis_set_fmt(struct v4l2_subdev *mipi_sd,
+ 	mf->code = csis_fmt->code;
+ 	v4l_bound_align_image(&mf->width, 1, CSIS_MAX_PIX_WIDTH,
+ 			      csis_fmt->pix_width_alignment,
+-			      &mf->height, 1, CSIS_MAX_PIX_HEIGHT, 1,
++			      &mf->height, 1, CSIS_MAX_PIX_HEIGHT, 0,
+ 			      0);
+ 
+ 	if (format->which == V4L2_SUBDEV_FORMAT_TRY)

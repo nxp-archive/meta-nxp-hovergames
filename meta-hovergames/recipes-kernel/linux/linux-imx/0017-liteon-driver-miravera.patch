@@ -1,0 +1,126 @@
+diff --git a/drivers/media/platform/mxc/capture/liteon_tof.c b/drivers/media/platform/mxc/capture/liteon_tof.c
+index 96902ca4965588d8a5d26801be13a0de20ca2b62..302e26f7fa696d54e480fa4c1fcbed54f8a82754 100644
+--- a/drivers/media/platform/mxc/capture/liteon_tof.c
++++ b/drivers/media/platform/mxc/capture/liteon_tof.c
+@@ -28,18 +28,32 @@ struct liteon_tof_res {
+ 
+ struct liteon_tof_res liteon_tof_valid_res[] = {
+     {224, 172},
++    {224, 173},
+     {224, 860},
+-    {224, 1548}
++    {224, 865},
++    {224, 1548},
++    {224, 1557},
+ };
+-#define RES_MAX	ARRAY_SIZE(liteon_tof_valid_res)
++
++struct liteon_tof_res liteon_tof_vga_valid_res[] = {
++    {640, 240},
++    {640, 241},
++    {640, 1200},
++    {640, 1205},
++    {640, 2160},
++    {640, 2169},
++};
++
++struct liteon_tof_res * liteon_valid_res = NULL;
++int liteon_res_max = 0;
+ 
+ static int find_resulution(int width, int height)
+ {
+-	struct liteon_tof_res *ptr = liteon_tof_valid_res;
++	struct liteon_tof_res *ptr = liteon_valid_res;
+ 
+-	while (ptr != (liteon_tof_valid_res + RES_MAX)) {
++	while (ptr != (liteon_valid_res + liteon_res_max)) {
+ 		if ((ptr->width == width) && (ptr->height == height))
+-			return &liteon_tof_valid_res[RES_MAX - 1] - ptr;
++			return &liteon_valid_res[liteon_res_max - 1] - ptr;
+ 		ptr++;
+ 	}
+ 
+@@ -104,7 +118,7 @@ static int liteon_tof_s_parm(struct v4l2_subdev *subdev,
+ 	/* This is the only case currently handled. */
+ 	case V4L2_BUF_TYPE_VIDEO_CAPTURE:
+ 	case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
+-		if (sparm->parm.capture.capturemode >= RES_MAX) {
++		if (sparm->parm.capture.capturemode >= liteon_res_max) {
+ 			dev_warn(dev, "Wrong resolution mode\n");
+ 			ret = -EINVAL;
+ 		}
+@@ -156,8 +170,8 @@ static int liteon_tof_get_fmt(struct v4l2_subdev *subdev,
+ 	mf->code	= MEDIA_BUS_FMT_SBGGR12_1X12;
+ 	mf->colorspace	= V4L2_COLORSPACE_RAW;
+ 	mf->field	= V4L2_FIELD_NONE;
+-	mf->width	= liteon_tof_valid_res[capmode].width;
+-	mf->height	= liteon_tof_valid_res[capmode].height;
++	mf->width	= liteon_valid_res[capmode].width;
++	mf->height	= liteon_valid_res[capmode].height;
+ 
+ 	return 0;
+ }
+@@ -177,12 +191,12 @@ static int liteon_tof_enum_framesizes(struct v4l2_subdev *subdev,
+ 			       struct v4l2_subdev_pad_config *cfg,
+ 			       struct v4l2_subdev_frame_size_enum *fse)
+ {
+-	if (fse->index > RES_MAX)
++	if (fse->index > liteon_res_max)
+ 		return -EINVAL;
+ 
+-	fse->max_width = liteon_tof_valid_res[fse->index].width;
++	fse->max_width = liteon_valid_res[fse->index].width;
+ 	fse->min_width = fse->max_width;
+-	fse->max_height = liteon_tof_valid_res[fse->index].height;
++	fse->max_height = liteon_valid_res[fse->index].height;
+ 	fse->min_height = fse->max_height;
+ 	return 0;
+ }
+@@ -224,10 +238,26 @@ static int liteon_tof_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct liteon_tof *cam;
++	struct device_node *dn;
+ 	int err;
+ 
+ 	cam = devm_kzalloc(dev, sizeof(*cam), GFP_KERNEL);
+ 
++	dn = of_find_compatible_node(NULL, NULL, "lton,liteon_tof");
++	if (dn)
++		liteon_valid_res = liteon_tof_valid_res;
++
++	dn = of_find_compatible_node(NULL, NULL, "lton,liteon_tof_vga");
++	if (dn)
++		liteon_valid_res = liteon_tof_vga_valid_res;
++
++	if (!liteon_valid_res) {
++		dev_err(dev, "No compatible device found");
++		return -ENODEV;
++	}
++
++	liteon_res_max = sizeof(*liteon_valid_res)/sizeof(liteon_valid_res[0]);
++
+ 	/* Select default pin configuration */
+ 	if (IS_ERR(devm_pinctrl_get_select_default(dev)))
+ 		dev_warn(dev, "error enabling pinctrl configuration\n");
+@@ -310,7 +340,9 @@ static int liteon_tof_probe(struct platform_device *pdev)
+ 				err);
+ 		media_entity_cleanup(&cam->subdev.entity);
+ 	}
+-	dev_info(dev, "Liteon cam probed\n");
++	dev_info(dev, "Liteon cam probed%s",
++		(liteon_valid_res == liteon_tof_vga_valid_res) ?
++		" (vga mode)" : "");
+ 
+ 	platform_set_drvdata(pdev, cam);
+ 
+@@ -329,7 +361,8 @@ static int liteon_tof_remove(struct platform_device *pdev)
+ }
+ 
+ static const struct of_device_id liteon_tof_of_match[] = {
+-	{ .compatible = "lton,liteon_tof_csi", },
++	{ .compatible = "lton,liteon_tof", },
++	{ .compatible = "lton,liteon_tof_vga", },
+ 	{ }
+ };
+ 

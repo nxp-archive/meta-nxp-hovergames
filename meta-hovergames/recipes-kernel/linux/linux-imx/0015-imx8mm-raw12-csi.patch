@@ -1,0 +1,103 @@
+diff --git a/drivers/media/platform/mxc/capture/mx6s_capture.c b/drivers/media/platform/mxc/capture/mx6s_capture.c
+index d36a00b6ec750d0f1d908d86d6ca6f899151aab5..98c6880eb01427d058748f0c45d6931cea23d7a8 100644
+--- a/drivers/media/platform/mxc/capture/mx6s_capture.c
++++ b/drivers/media/platform/mxc/capture/mx6s_capture.c
+@@ -247,25 +247,31 @@ static struct mx6s_fmt formats[] = {
+ 		.fourcc		= V4L2_PIX_FMT_UYVY,
+ 		.pixelformat	= V4L2_PIX_FMT_UYVY,
+ 		.mbus_code	= MEDIA_BUS_FMT_UYVY8_2X8,
+-		.bpp		= 2,
++		.bpp		= 16,
+ 	}, {
+ 		.name		= "YUYV-16",
+ 		.fourcc		= V4L2_PIX_FMT_YUYV,
+ 		.pixelformat	= V4L2_PIX_FMT_YUYV,
+ 		.mbus_code	= MEDIA_BUS_FMT_YUYV8_2X8,
+-		.bpp		= 2,
++		.bpp		= 16,
+ 	}, {
+ 		.name		= "YUV32 (X-Y-U-V)",
+ 		.fourcc		= V4L2_PIX_FMT_YUV32,
+ 		.pixelformat	= V4L2_PIX_FMT_YUV32,
+ 		.mbus_code	= MEDIA_BUS_FMT_AYUV8_1X32,
+-		.bpp		= 4,
++		.bpp		= 32,
+ 	}, {
+ 		.name		= "RAWRGB8 (SBGGR8)",
+ 		.fourcc		= V4L2_PIX_FMT_SBGGR8,
+ 		.pixelformat	= V4L2_PIX_FMT_SBGGR8,
+ 		.mbus_code	= MEDIA_BUS_FMT_SBGGR8_1X8,
+-		.bpp		= 1,
++		.bpp		= 8,
++	}, {
++		.name		= "RAWRGB12P (SBGGR12P)",
++		.fourcc		= V4L2_PIX_FMT_SBGGR12P,
++		.pixelformat	= V4L2_PIX_FMT_SBGGR12P,
++		.mbus_code	= MEDIA_BUS_FMT_SBGGR12_1X12,
++		.bpp		= 12,
+ 	}
+ };
+ 
+@@ -848,6 +854,9 @@ static int mx6s_configure_csi(struct mx6s_csi_dev *csi_dev)
+ 			/* For parallel 8-bit sensor input */
+ 			width = pix->width * 2;
+ 		break;
++	case V4L2_PIX_FMT_SBGGR12P:
++		width = pix->width * 3 / 2;
++		break;
+ 	default:
+ 		pr_debug("   case not supported\n");
+ 		return -EINVAL;
+@@ -869,6 +878,7 @@ static int mx6s_configure_csi(struct mx6s_csi_dev *csi_dev)
+ 			cr18 |= BIT_MIPI_DATA_FORMAT_YUV422_8B;
+ 			break;
+ 		case V4L2_PIX_FMT_SBGGR8:
++		case V4L2_PIX_FMT_SBGGR12P:
+ 			cr18 |= BIT_MIPI_DATA_FORMAT_RAW8;
+ 			break;
+ 		default:
+@@ -1449,8 +1459,8 @@ static int mx6s_vidioc_try_fmt_vid_cap(struct file *file, void *priv,
+ 	if (pix->field != V4L2_FIELD_INTERLACED)
+ 		pix->field = V4L2_FIELD_NONE;
+ 
+-	pix->sizeimage = fmt->bpp * pix->height * pix->width;
+-	pix->bytesperline = fmt->bpp * pix->width;
++	pix->sizeimage = fmt->bpp * pix->height * pix->width / 8;
++	pix->bytesperline = fmt->bpp * pix->width / 8;
+ 
+ 	return ret;
+ }
+diff --git a/drivers/media/platform/mxc/capture/mxc_mipi_csi.c b/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
+index a35563cf5130e528d2906c441bfa81a189b6fa56..e83bdf2308e4abd082e0b405f79836749665a526 100644
+--- a/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
++++ b/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
+@@ -322,6 +322,11 @@ static const struct csis_pix_format mipi_csis_formats[] = {
+ 		.code = MEDIA_BUS_FMT_SBGGR8_1X8,
+ 		.fmt_reg = MIPI_CSIS_ISPCFG_FMT_RAW8,
+ 		.data_alignment = 8,
++	}, {
++		/* Raw12 transferred in 8-bit mode */
++		.code = MEDIA_BUS_FMT_SBGGR12_1X12,
++		.fmt_reg = MIPI_CSIS_ISPCFG_FMT_RAW8,
++		.data_alignment = 8,
+ 	}
+ };
+ 
+@@ -475,8 +480,15 @@ static void __mipi_csis_set_format(struct csi_state *state)
+ 	val = (val & ~MIPI_CSIS_ISPCFG_FMT_MASK) | state->csis_fmt->fmt_reg;
+ 	mipi_csis_write(state, MIPI_CSIS_ISPCONFIG_CH0, val);
+ 
+-	/* Pixel resolution */
+-	val = mf->width | (mf->height << 16);
++	/* Set pixel resolution */
++	val = mf->width;
++
++	/* Correct for Raw12 hybrid mode */
++	if (mf->code == MEDIA_BUS_FMT_SBGGR12_1X12)
++		val = val * 3 / 2;
++
++	val |=  mf->height << 16;
++
+ 	mipi_csis_write(state, MIPI_CSIS_ISPRESOL_CH0, val);
+ }
+ 
