@@ -1,0 +1,128 @@
+diff --git a/drivers/media/platform/mxc/capture/mx6s_capture.c b/drivers/media/platform/mxc/capture/mx6s_capture.c
+index 98c6880eb01427d058748f0c45d6931cea23d7a8..2f037874ffcb88a50f001120073489bb6a06c23d 100644
+--- a/drivers/media/platform/mxc/capture/mx6s_capture.c
++++ b/drivers/media/platform/mxc/capture/mx6s_capture.c
+@@ -131,6 +131,7 @@
+ #define BIT_CSI_ENABLE			(0x1 << 31)
+ #define BIT_MIPI_DATA_FORMAT_RAW8		(0x2a << 25)
+ #define BIT_MIPI_DATA_FORMAT_RAW10		(0x2b << 25)
++#define BIT_MIPI_DATA_FORMAT_RAW12		(0x2c << 25)
+ #define BIT_MIPI_DATA_FORMAT_YUV422_8B	(0x1e << 25)
+ #define BIT_MIPI_DATA_FORMAT_MASK	(0x3F << 25)
+ #define BIT_MIPI_DATA_FORMAT_OFFSET	25
+@@ -247,31 +248,31 @@ static struct mx6s_fmt formats[] = {
+ 		.fourcc		= V4L2_PIX_FMT_UYVY,
+ 		.pixelformat	= V4L2_PIX_FMT_UYVY,
+ 		.mbus_code	= MEDIA_BUS_FMT_UYVY8_2X8,
+-		.bpp		= 16,
++		.bpp		= 2,
+ 	}, {
+ 		.name		= "YUYV-16",
+ 		.fourcc		= V4L2_PIX_FMT_YUYV,
+ 		.pixelformat	= V4L2_PIX_FMT_YUYV,
+ 		.mbus_code	= MEDIA_BUS_FMT_YUYV8_2X8,
+-		.bpp		= 16,
++		.bpp		= 2,
+ 	}, {
+ 		.name		= "YUV32 (X-Y-U-V)",
+ 		.fourcc		= V4L2_PIX_FMT_YUV32,
+ 		.pixelformat	= V4L2_PIX_FMT_YUV32,
+ 		.mbus_code	= MEDIA_BUS_FMT_AYUV8_1X32,
+-		.bpp		= 32,
++		.bpp		= 4,
+ 	}, {
+ 		.name		= "RAWRGB8 (SBGGR8)",
+ 		.fourcc		= V4L2_PIX_FMT_SBGGR8,
+ 		.pixelformat	= V4L2_PIX_FMT_SBGGR8,
+ 		.mbus_code	= MEDIA_BUS_FMT_SBGGR8_1X8,
+-		.bpp		= 8,
++		.bpp		= 1,
+ 	}, {
+-		.name		= "RAWRGB12P (SBGGR12P)",
+-		.fourcc		= V4L2_PIX_FMT_SBGGR12P,
+-		.pixelformat	= V4L2_PIX_FMT_SBGGR12P,
++		.name		= "RAWRGB12 (SBGGR12)",
++		.fourcc		= V4L2_PIX_FMT_SBGGR12,
++		.pixelformat	= V4L2_PIX_FMT_SBGGR12,
+ 		.mbus_code	= MEDIA_BUS_FMT_SBGGR12_1X12,
+-		.bpp		= 12,
++		.bpp		= 2,
+ 	}
+ };
+ 
+@@ -848,15 +849,13 @@ static int mx6s_configure_csi(struct mx6s_csi_dev *csi_dev)
+ 		break;
+ 	case V4L2_PIX_FMT_UYVY:
+ 	case V4L2_PIX_FMT_YUYV:
++	case V4L2_PIX_FMT_SBGGR12:
+ 		if (csi_dev->csi_mipi_mode == true)
+ 			width = pix->width;
+ 		else
+ 			/* For parallel 8-bit sensor input */
+ 			width = pix->width * 2;
+ 		break;
+-	case V4L2_PIX_FMT_SBGGR12P:
+-		width = pix->width * 3 / 2;
+-		break;
+ 	default:
+ 		pr_debug("   case not supported\n");
+ 		return -EINVAL;
+@@ -878,9 +877,11 @@ static int mx6s_configure_csi(struct mx6s_csi_dev *csi_dev)
+ 			cr18 |= BIT_MIPI_DATA_FORMAT_YUV422_8B;
+ 			break;
+ 		case V4L2_PIX_FMT_SBGGR8:
+-		case V4L2_PIX_FMT_SBGGR12P:
+ 			cr18 |= BIT_MIPI_DATA_FORMAT_RAW8;
+ 			break;
++		case V4L2_PIX_FMT_SBGGR12:
++			cr18 |= BIT_MIPI_DATA_FORMAT_RAW12;
++			break;
+ 		default:
+ 			pr_debug("   fmt not supported\n");
+ 			return -EINVAL;
+@@ -1459,8 +1460,8 @@ static int mx6s_vidioc_try_fmt_vid_cap(struct file *file, void *priv,
+ 	if (pix->field != V4L2_FIELD_INTERLACED)
+ 		pix->field = V4L2_FIELD_NONE;
+ 
+-	pix->sizeimage = fmt->bpp * pix->height * pix->width / 8;
+-	pix->bytesperline = fmt->bpp * pix->width / 8;
++	pix->sizeimage = fmt->bpp * pix->height * pix->width;
++	pix->bytesperline = fmt->bpp * pix->width;
+ 
+ 	return ret;
+ }
+diff --git a/drivers/media/platform/mxc/capture/mxc_mipi_csi.c b/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
+index 5ba5ae2237ab579111c1169859b13983833a9f1a..8745b102ac4ec766a27f03048aed453401ca1e95 100644
+--- a/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
++++ b/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
+@@ -323,10 +323,9 @@ static const struct csis_pix_format mipi_csis_formats[] = {
+ 		.fmt_reg = MIPI_CSIS_ISPCFG_FMT_RAW8,
+ 		.data_alignment = 8,
+ 	}, {
+-		/* Raw12 transferred in 8-bit mode */
+ 		.code = MEDIA_BUS_FMT_SBGGR12_1X12,
+-		.fmt_reg = MIPI_CSIS_ISPCFG_FMT_RAW8,
+-		.data_alignment = 8,
++		.fmt_reg = MIPI_CSIS_ISPCFG_FMT_RAW12,
++		.data_alignment = 16,
+ 	}
+ };
+ 
+@@ -480,15 +479,8 @@ static void __mipi_csis_set_format(struct csi_state *state)
+ 	val = (val & ~MIPI_CSIS_ISPCFG_FMT_MASK) | state->csis_fmt->fmt_reg;
+ 	mipi_csis_write(state, MIPI_CSIS_ISPCONFIG_CH0, val);
+ 
+-	/* Set pixel resolution */
+-	val = mf->width;
+-
+-	/* Correct for Raw12 hybrid mode */
+-	if (mf->code == MEDIA_BUS_FMT_SBGGR12_1X12)
+-		val = val * 3 / 2;
+-
+-	val |=  mf->height << 16;
+-
++	/* Pixel resolution */
++	val = mf->width | (mf->height << 16);
+ 	mipi_csis_write(state, MIPI_CSIS_ISPRESOL_CH0, val);
+ }
+ 
